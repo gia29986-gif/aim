@@ -1,0 +1,36 @@
+{
+  "name": "zalo-attendance-bot",
+  "version": "1.1.0",
+  "description": "Zalo Bot for Attendance Management — stores data as JSON directly on GitHub",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "lint": "eslint src/ index.js"
+  },
+  "keywords": [
+    "zalo",
+    "bot",
+    "attendance",
+    "checkin",
+    "checkout",
+    "github-storage",
+    "nodejs"
+  ],
+  "author": "Zalo Attendance Bot",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.7.2",
+    "body-parser": "^1.20.2",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "moment-timezone": "^0.5.45",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
