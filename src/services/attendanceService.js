@@ -1,8 +1,5 @@
 /**
  * src/services/attendanceService.js
- * ==================================
- * Service chứa toàn bộ business logic chấm công & tính lương.
- * Hỗ trợ: Nhắn tắt (4t 2n, 4t, 2n, 6h), tự phân tích ngày/tháng/năm tùy chỉnh.
  */
 
 'use strict';
@@ -18,9 +15,6 @@ function formatVND(amount) {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
 }
 
-/**
- * Trích xuất Ngày/Tháng/Năm từ câu nhắn (VD: "02/08", "2/8/2026", "02-08")
- */
 function extractCustomDate(text) {
   const currentYear = new Date().getFullYear();
   const dateMatch = text.match(/(?:ngày\s*)?(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{4}|\d{2}))?/i);
@@ -37,9 +31,6 @@ function extractCustomDate(text) {
   return null;
 }
 
-/**
- * Phân tích số giờ làm (trong/ngoài) từ câu nhắn tắt
- */
 function parseDirectHours(text) {
   const cleanedText = text.replace(/(?:ngày\s*)?\d{1,2}[\/\-]\d{1,2}(?:[\/\-]\d{2,4})?/gi, '').trim().toLowerCase();
 
@@ -144,13 +135,7 @@ async function handleDirectHours({ userId, displayName, groupId, hoursData, cust
       note         : rawText,
     });
 
-    return (
-      `💰 Ghi nhận ca làm thành công!\n` +
-      `👤 Nhân viên : ${displayName}\n` +
-      `📅 Ngày      : ${targetDateStr}\n` +
-      `⏱️  Giờ làm   : ${insideHours}h trong | ${outsideHours}h ngoài (Tổng: ${totalHours}h)\n` +
-      `💵 Tiền lương: ${formatVND(totalSalary)}`
-    );
+    return `💰 Ghi nhận ca làm thành công!\n👤 Nhân viên : ${displayName}\n📅 Ngày      : ${targetDateStr}\n⏱️  Giờ làm   : ${insideHours}h trong | ${outsideHours}h ngoài (Tổng: ${totalHours}h)\n💵 Tiền lương: ${formatVND(totalSalary)}`;
   } catch (err) {
     console.error('[AttendanceSvc] Lỗi xử lý nhập giờ:', err.message);
     return '❌ Có lỗi xảy ra khi lưu ca làm. Vui lòng thử lại sau.';
@@ -182,12 +167,7 @@ async function handleCheckin({ userId, displayName, groupId }) {
       note        : 'Vào ca',
     });
 
-    return (
-      `✅ Checkin thành công!\n` +
-      `👤 Nhân viên : ${displayName}\n` +
-      `🕐 Giờ vào   : ${checkinTimeStr}\n` +
-      `📅 Ngày      : ${dateStr}`
-    );
+    return `✅ Checkin thành công!\n👤 Nhân viên : ${displayName}\n🕐 Giờ vào   : ${checkinTimeStr}\n📅 Ngày      : ${dateStr}`;
   } catch (err) {
     console.error('[AttendanceSvc] Lỗi checkin:', err.message);
     return '❌ Có lỗi xảy ra khi checkin.';
@@ -221,13 +201,7 @@ async function handleCheckout({ userId, displayName, groupId }) {
       `Checkout (Lương: ${formatVND(totalSalary)})`
     );
 
-    return (
-      `🏁 Checkout thành công!\n` +
-      `👤 Nhân viên  : ${displayName}\n` +
-      `⏱️  Tổng giờ   : ${totalHours} giờ\n` +
-      `💵 Tiền lương : ${formatVND(totalSalary)}\n` +
-      `📅 Ngày       : ${timeUtils.formatDate()}`
-    );
+    return `🏁 Checkout thành công!\n👤 Nhân viên  : ${displayName}\n⏱️  Tổng giờ   : ${totalHours} giờ\n💵 Tiền lương : ${formatVND(totalSalary)}\n📅 Ngày       : ${timeUtils.formatDate()}`;
   } catch (err) {
     console.error('[AttendanceSvc] Lỗi checkout:', err.message);
     return '❌ Có lỗi xảy ra khi checkout.';
@@ -242,14 +216,7 @@ async function handleBaoCao({ userId, displayName }) {
       return `📊 Báo cáo ${timeUtils.getCurrentMonthLabel()}\n👤 ${displayName}\n\nChưa có dữ liệu tháng này.`;
     }
 
-    return (
-      `📊 BÁO CÁO LƯƠNG ${timeUtils.getCurrentMonthLabel()}\n` +
-      `━━━━━━━━━━━━━━━━━━━━\n` +
-      `👤 Nhân viên   : ${displayName}\n` +
-      `📅 Số ca làm   : ${days} ca\n` +
-      `⏱️  Tổng giờ    : ${totalHours} giờ\n` +
-      `💰 TỔNG LƯƠNG  : ${formatVND(totalSalary || 0)}\n` +
-      `━━━━━━━━━━━━━━━━━━━━`;
+    return `📊 BÁO CÁO LƯƠNG ${timeUtils.getCurrentMonthLabel()}\n━━━━━━━━━━━━━━━━━━━━\n👤 Nhân viên   : ${displayName}\n📅 Số ca làm   : ${days} ca\n⏱️  Tổng giờ    : ${totalHours} giờ\n💰 TỔNG LƯƠNG  : ${formatVND(totalSalary || 0)}\n━━━━━━━━━━━━━━━━━━━━`;
   } catch (err) {
     console.error('[AttendanceSvc] Lỗi báo cáo:', err.message);
     return '❌ Không thể lấy báo cáo lúc này.';
@@ -257,17 +224,7 @@ async function handleBaoCao({ userId, displayName }) {
 }
 
 function handleHelp(displayName) {
-  return (
-    `🤖 HƯỚNG DẪN ĐIỂM DANH & TÍNH LƯƠNG\n` +
-    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-    `👋 Xin chào ${displayName}!\n\n` +
-    `📌 CÚ PHÁP NHẮN TẮT (TỰ TÍNH LƯƠNG):\n` +
-    `  • "4t 2n" → 4h ca trong + 2h ca ngoài hôm nay\n` +
-    `  • "02/08 4t 2n" → Chấm công bù cho ngày 02/08\n` +
-    `  • "6t" hoặc "6h" → 6h ca trong\n\n` +
-    `📌 LỆNH HỆ THỐNG:\n` +
-    `  • /baocao → Báo cáo tổng tiền lương`
-  );
+  return `🤖 HƯỚNG DẪN ĐIỂM DANH & TÍNH LƯƠNG\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n👋 Xin chào ${displayName}!\n\n📌 CÚ PHÁP NHẮN TẮT (TỰ TÍNH LƯƠNG):\n  • "4t 2n" → 4h ca trong + 2h ca ngoài hôm nay\n  • "02/08 4t 2n" → Chấm công bù cho ngày 02/08\n  • "6t" hoặc "6h" → 6h ca trong\n\n📌 LỆNH HỆ THỐNG:\n  • /baocao → Báo cáo tổng tiền lương`;
 }
 
 async function processMessage({ userId, displayName, groupId, messageText }) {
