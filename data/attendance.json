@@ -1,4 +1,18 @@
 {
-  "records": [],
-  "lastUpdated": null
+  "records": [
+    {
+      "id": "1785772583440-0lnsld",
+      "systemTime": "03/08/2026 22:56:23",
+      "date": "03/08/2026",
+      "userId": "ZALO_USER",
+      "displayName": "Người dùng Zalo",
+      "groupId": "",
+      "type": "Checkin",
+      "checkinTime": "22:56:23",
+      "checkoutTime": "",
+      "totalHours": 0,
+      "note": ""
+    }
+  ],
+  "lastUpdated": "2026-08-03T15:56:23.440Z"
 }
