@@ -1,9 +1,7 @@
 /**
  * src/services/attendanceService.js
  * ==================================
- * Service chứa toàn bộ business logic chấm công.
- * Phân tích lệnh, xử lý check-in/out, báo cáo,
- * và điều phối ghi dữ liệu lên GitHub (storageService).
+ * Service chứa toàn bộ business logic chấm công & tính lương.
  */
 
 'use strict';
@@ -11,105 +9,158 @@
 const storageService = require('./storageService');
 const timeUtils      = require('../utils/timeUtils');
 
-// ─── Regex patterns để nhận dạng lệnh từ văn bản tự do ──────────────────
+// ─── Giá lương mặc định (VNĐ/giờ) ──────────────────────────────────────────
+const RATE_INSIDE  = 30000; // 30.000đ / giờ ca trong
+const RATE_OUTSIDE = 35000; // 35.000đ / giờ ca ngoài
+
+// ─── Helper định dạng tiền VNĐ ──────────────────────────────────────────────
+function formatVND(amount) {
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
+}
+
+/**
+ * Phân tích cú pháp nhắn giờ làm trực tiếp (VD: "4 trong 2 ngoài", "6h", "5 tiếng trong")
+ */
+function parseDirectHours(text) {
+  const trimmed = text.trim().toLowerCase();
+  
+  let insideHours = 0;
+  let outsideHours = 0;
+  let matched = false;
+
+  // Pattern 1: "4 trong 2 ngoài" hoặc "4h trong 2h ngoài"
+  const combinedMatch = trimmed.match(/(\d+(?:\.\d+)?)\s*(?:tiếng|h|giờ)?\s*trong\s*(\d+(?:\.\d+)?)\s*(?:tiếng|h|giờ)?\s*ngoài/i);
+  if (combinedMatch) {
+    insideHours = parseFloat(combinedMatch[1]);
+    outsideHours = parseFloat(combinedMatch[2]);
+    matched = true;
+  } else {
+    // Pattern 2: "2 ngoài 4 trong"
+    const reversedMatch = trimmed.match(/(\d+(?:\.\d+)?)\s*(?:tiếng|h|giờ)?\s*ngoài\s*(\d+(?:\.\d+)?)\s*(?:tiếng|h|giờ)?\s*trong/i);
+    if (reversedMatch) {
+      outsideHours = parseFloat(reversedMatch[1]);
+      insideHours = parseFloat(reversedMatch[2]);
+      matched = true;
+    } else {
+      // Pattern 3: Chỉ nhắn ca trong (VD: "6 trong", "5h trong")
+      const insideMatch = trimmed.match(/(\d+(?:\.\d+)?)\s*(?:tiếng|h|giờ)?\s*trong\b/i);
+      if (insideMatch) {
+        insideHours = parseFloat(insideMatch[1]);
+        matched = true;
+      }
+
+      // Pattern 4: Chỉ nhắn ca ngoài (VD: "4 ngoài", "3 tiếng ngoài")
+      const outsideMatch = trimmed.match(/(\d+(?:\.\d+)?)\s*(?:tiếng|h|giờ)?\s*ngoài\b/i);
+      if (outsideMatch) {
+        outsideHours = parseFloat(outsideMatch[1]);
+        matched = true;
+      }
+
+      // Pattern 5: Chỉ nhắn số tiếng thuần túy (VD: "6 tiếng", "8h", "7.5 giờ") -> Mặc định là ca trong
+      if (!matched) {
+        const plainHoursMatch = trimmed.match(/^(\d+(?:\.\d+)?)\s*(?:tiếng|h|giờ)$/i);
+        if (plainHoursMatch) {
+          insideHours = parseFloat(plainHoursMatch[1]);
+          matched = true;
+        }
+      }
+    }
+  }
+
+  if (matched) {
+    return {
+      matched: true,
+      insideHours,
+      outsideHours,
+      totalHours: insideHours + outsideHours,
+    };
+  }
+
+  return { matched: false };
+}
+
+// ─── Regex patterns cho các lệnh hệ thống khác ───────────────────────────
 const PATTERNS = {
-  // Lệnh chuẩn: /in, /checkin, /out, /checkout, /baocao
   CHECKIN  : /^\/?(checkin|in)\b/i,
   CHECKOUT : /^\/?(checkout|out)\b/i,
   BAOCAO   : /^\/(baocao|report|bc)\b/i,
   HELP     : /^\/(help|huongdan|hd)\b/i,
-
-  // Tự do: "Checkin 08:30", "check in lúc 8h30"
-  FREE_CHECKIN : /(?:checkin|check\s*in|bắt\s*đầu|vào\s*ca|bắt\s*đầu\s*làm)[\s:]+(\d{1,2}[h:]\d{0,2}|\d{1,2})/i,
-
-  // Tự do: "Checkout 17:00", "ra ca lúc 17h"
-  FREE_CHECKOUT: /(?:checkout|check\s*out|kết\s*thúc|ra\s*ca|tan\s*ca)[\s:]+(\d{1,2}[h:]\d{0,2}|\d{1,2})/i,
-
-  // Khoảng giờ: "Làm từ 8h đến 17h", "Từ 8:00 đến 17:00"
-  TIME_RANGE: /(?:làm\s*)?từ\s+(\d{1,2}[h:]\d{0,2}|\d{1,2})\s+(?:đến|đến lúc|tới|to)\s+(\d{1,2}[h:]\d{0,2}|\d{1,2})/i,
 };
 
-/**
- * Phân tích một đoạn text và xác định loại lệnh + thông tin thời gian.
- * @param {string} text - Nội dung tin nhắn
- * @returns {{ command: string, checkinTime: string|null, checkoutTime: string|null }}
- */
 function parseCommand(text) {
   const trimmed = text.trim();
 
-  // --- Lệnh chuẩn ---
-  if (PATTERNS.CHECKIN.test(trimmed))  return { command: 'checkin',  checkinTime: null, checkoutTime: null };
-  if (PATTERNS.CHECKOUT.test(trimmed)) return { command: 'checkout', checkinTime: null, checkoutTime: null };
-  if (PATTERNS.BAOCAO.test(trimmed))   return { command: 'baocao',   checkinTime: null, checkoutTime: null };
-  if (PATTERNS.HELP.test(trimmed))     return { command: 'help',     checkinTime: null, checkoutTime: null };
+  if (PATTERNS.CHECKIN.test(trimmed))  return { command: 'checkin' };
+  if (PATTERNS.CHECKOUT.test(trimmed)) return { command: 'checkout' };
+  if (PATTERNS.BAOCAO.test(trimmed))   return { command: 'baocao' };
+  if (PATTERNS.HELP.test(trimmed))     return { command: 'help' };
 
-  // --- Khoảng giờ: Làm từ 8h đến 17h ---
-  const rangeMatch = trimmed.match(PATTERNS.TIME_RANGE);
-  if (rangeMatch) {
-    return {
-      command      : 'timerange',
-      checkinTime  : rangeMatch[1],
-      checkoutTime : rangeMatch[2],
-    };
+  // Thử phân tích cú pháp nhắn giờ làm trực tiếp
+  const direct = parseDirectHours(trimmed);
+  if (direct.matched) {
+    return { command: 'direct_hours', hoursData: direct };
   }
 
-  // --- Checkin tự do: Checkin 08:30 ---
-  const freeCheckin = trimmed.match(PATTERNS.FREE_CHECKIN);
-  if (freeCheckin) {
-    return { command: 'checkin', checkinTime: freeCheckin[1], checkoutTime: null };
-  }
-
-  // --- Checkout tự do: Checkout 17:00 ---
-  const freeCheckout = trimmed.match(PATTERNS.FREE_CHECKOUT);
-  if (freeCheckout) {
-    return { command: 'checkout', checkinTime: null, checkoutTime: freeCheckout[1] };
-  }
-
-  return { command: 'unknown', checkinTime: null, checkoutTime: null };
+  return { command: 'unknown' };
 }
 
 /**
- * Xử lý lệnh CHECKIN.
- * - Kiểm tra đã checkin chưa (nếu rồi thì cảnh báo)
- * - Ghi dòng mới vào Google Sheets
- * - Trả về tin nhắn phản hồi
- *
- * @param {Object} params
- * @param {string} params.userId
- * @param {string} params.displayName
- * @param {string|null} params.groupId
- * @param {string|null} params.customTime - Giờ tùy chỉnh từ text tự do (VD: "08:30")
- * @returns {Promise<string>} Tin nhắn phản hồi
+ * Xử lý nhập giờ làm trực tiếp (VD: 4 trong 2 ngoài)
  */
-async function handleCheckin({ userId, displayName, groupId, customTime }) {
+async function handleDirectHours({ userId, displayName, groupId, hoursData, rawText }) {
   try {
-    // Kiểm tra đã checkin chưa
+    const { insideHours, outsideHours, totalHours } = hoursData;
+
+    const insideSalary  = insideHours * RATE_INSIDE;
+    const outsideSalary = outsideHours * RATE_OUTSIDE;
+    const totalSalary   = insideSalary + outsideSalary;
+
+    const nowStr  = timeUtils.formatNow();
+    const dateStr = timeUtils.formatDate();
+
+    // Ghi trực tiếp vào GitHub Storage
+    await storageService.saveAttendanceRecord({
+      systemTime   : nowStr,
+      date         : dateStr,
+      userId       : userId,
+      displayName  : displayName,
+      groupId      : groupId || '',
+      type         : 'Nhập giờ trực tiếp',
+      insideHours  : insideHours,
+      outsideHours : outsideHours,
+      totalHours   : totalHours,
+      insideSalary : insideSalary,
+      outsideSalary: outsideSalary,
+      totalSalary  : totalSalary,      // 👈 Lưu tổng tiền lương VNĐ vào đây
+      note         : rawText,
+    });
+
+    return (
+      `💰 Ghi nhận ca làm thành công!\n` +
+      `👤 Nhân viên : ${displayName}\n` +
+      `⏱️  Giờ làm   : ${insideHours}h trong | ${outsideHours}h ngoài (Tổng: ${totalHours}h)\n` +
+      `💵 Tiền lương: ${formatVND(totalSalary)}\n` +
+      `📅 Ngày      : ${dateStr}`
+    );
+  } catch (err) {
+    console.error('[AttendanceSvc] Lỗi xử lý nhập giờ:', err.message);
+    return '❌ Có lỗi xảy ra khi lưu ca làm. Vui lòng thử lại sau.';
+  }
+}
+
+async function handleCheckin({ userId, displayName, groupId }) {
+  try {
     const pending = await storageService.getPendingCheckin(userId);
     if (pending) {
-      return (
-        `⚠️ ${displayName} ơi, bạn đã checkin lúc ${pending.checkinTime} rồi!\n` +
-        `Nhập /out hoặc /checkout để kết thúc ca làm việc trước khi checkin mới nhé.`
-      );
+      return `⚠️ ${displayName} ơi, bạn đã checkin lúc ${pending.checkinTime} rồi!`;
     }
 
-    // Xác định thời điểm checkin
     const now = timeUtils.nowVN();
-    let checkinMoment = now;
+    const checkinTimeStr = timeUtils.formatTime(now);
+    const dateStr        = timeUtils.formatDate(now);
 
-    if (customTime) {
-      const parsed = timeUtils.buildMomentFromTime(customTime, now);
-      if (parsed) {
-        checkinMoment = parsed;
-      }
-    }
-
-    const checkinTimeStr = timeUtils.formatTime(checkinMoment);
-    const dateStr        = timeUtils.formatDate(checkinMoment);
-    const systemTimeStr  = timeUtils.formatNow();
-
-    // Ghi vào GitHub Storage
     await storageService.saveAttendanceRecord({
-      systemTime  : systemTimeStr,
+      systemTime  : timeUtils.formatNow(),
       date        : dateStr,
       userId      : userId,
       displayName : displayName,
@@ -117,292 +168,99 @@ async function handleCheckin({ userId, displayName, groupId, customTime }) {
       type        : 'Checkin',
       checkinTime : checkinTimeStr,
       checkoutTime: '',
-      totalHours  : '',
-      note        : customTime ? `Giờ tùy chỉnh: ${customTime}` : '',
+      totalHours  : 0,
+      totalSalary : 0,
+      note        : 'Vào ca',
     });
 
-    // Tin nhắn phản hồi
     return (
       `✅ Checkin thành công!\n` +
       `👤 Nhân viên : ${displayName}\n` +
       `🕐 Giờ vào   : ${checkinTimeStr}\n` +
-      `📅 Ngày      : ${dateStr}\n\n` +
-      `Chúc bạn làm việc hiệu quả! 💪\n` +
-      `Nhập /out khi kết thúc ca làm việc.`
+      `📅 Ngày      : ${dateStr}`
     );
   } catch (err) {
-    console.error('[AttendanceSvc] Lỗi xử lý checkin:', err.message);
-    return '❌ Có lỗi xảy ra khi ghi nhận checkin. Vui lòng thử lại sau.';
+    console.error('[AttendanceSvc] Lỗi checkin:', err.message);
+    return '❌ Có lỗi xảy ra khi checkin.';
   }
 }
 
-/**
- * Xử lý lệnh CHECKOUT.
- * - Kiểm tra đã checkin chưa (nếu chưa thì cảnh báo)
- * - Tính tổng số giờ làm
- * - Cập nhật dòng checkin trong Sheets
- * - Trả về tin nhắn phản hồi
- *
- * @param {Object} params
- * @param {string} params.userId
- * @param {string} params.displayName
- * @param {string|null} params.groupId
- * @param {string|null} params.customTime - Giờ checkout tùy chỉnh
- * @returns {Promise<string>}
- */
-async function handleCheckout({ userId, displayName, groupId, customTime }) {
+async function handleCheckout({ userId, displayName, groupId }) {
   try {
-    // Tìm checkin chưa hoàn thành
     const pending = await storageService.getPendingCheckin(userId);
     if (!pending) {
-      return (
-        `⚠️ ${displayName} ơi, bạn chưa checkin hôm nay!\n` +
-        `Nhập /in hoặc /checkin để bắt đầu ca làm việc trước.`
-      );
+      return `⚠️ ${displayName} ơi, bạn chưa checkin hôm nay!`;
     }
 
-    // Xác định thời điểm checkout
     const now = timeUtils.nowVN();
-    let checkoutMoment = now;
+    const checkoutTimeStr = timeUtils.formatTime(now);
 
-    if (customTime) {
-      const parsed = timeUtils.buildMomentFromTime(customTime, now);
-      if (parsed) checkoutMoment = parsed;
-    }
-
-    // Parse giờ checkin từ sheet để tính tổng giờ
-    const moment        = require('moment-timezone');
+    const moment = require('moment-timezone');
     const checkinMoment = moment.tz(
       `${timeUtils.formatDate()} ${pending.checkinTime}`,
       'DD/MM/YYYY HH:mm:ss',
       timeUtils.TIMEZONE
     );
 
-    const checkoutTimeStr = timeUtils.formatTime(checkoutMoment);
-    const totalHours      = timeUtils.calcWorkHours(checkinMoment, checkoutMoment);
+    const totalHours = timeUtils.calcWorkHours(checkinMoment, now);
+    const totalSalary = totalHours * RATE_INSIDE; // Mặc định ca trong
 
-    // Cập nhật bản ghi trong GitHub Storage
-    const updated = await storageService.updateCheckoutRecord(
+    await storageService.updateCheckoutRecord(
       userId,
       checkoutTimeStr,
       totalHours,
-      customTime ? `Giờ tùy chỉnh: ${customTime}` : ''
+      `Checkout (Lương: ${formatVND(totalSalary)})`
     );
 
-    // Nếu không cập nhật được, ghi bản ghi mới
-    if (!updated) {
-      await storageService.saveAttendanceRecord({
-        systemTime  : timeUtils.formatNow(),
-        date        : timeUtils.formatDate(),
-        userId      : userId,
-        displayName : displayName,
-        groupId     : groupId || '',
-        type        : 'Checkout',
-        checkinTime : pending.checkinTime || '',
-        checkoutTime: checkoutTimeStr,
-        totalHours  : totalHours.toString(),
-        note        : 'Ghi riêng (không tìm thấy dòng checkin)',
-      });
-    }
-
-    // Tin nhắn phản hồi
-    const hoursFormatted = timeUtils.formatHours(totalHours);
     return (
       `🏁 Checkout thành công!\n` +
       `👤 Nhân viên  : ${displayName}\n` +
-      `🕐 Giờ vào    : ${pending.checkinTime}\n` +
-      `🕔 Giờ ra     : ${checkoutTimeStr}\n` +
-      `⏱️  Tổng giờ   : ${hoursFormatted} (${totalHours} giờ)\n` +
-      `📅 Ngày       : ${timeUtils.formatDate()}\n\n` +
-      `Cảm ơn bạn đã làm việc hôm nay! 🎉`
+      `⏱️  Tổng giờ   : ${totalHours} giờ\n` +
+      `💵 Tiền lương : ${formatVND(totalSalary)}\n` +
+      `📅 Ngày       : ${timeUtils.formatDate()}`
     );
   } catch (err) {
-    console.error('[AttendanceSvc] Lỗi xử lý checkout:', err.message);
-    return '❌ Có lỗi xảy ra khi ghi nhận checkout. Vui lòng thử lại sau.';
+    console.error('[AttendanceSvc] Lỗi checkout:', err.message);
+    return '❌ Có lỗi xảy ra khi checkout.';
   }
 }
 
-/**
- * Xử lý khoảng giờ tự do: "Làm từ 8h đến 17h".
- * Ghi cả checkin và checkout trong một lần.
- *
- * @param {Object} params
- * @param {string} params.userId
- * @param {string} params.displayName
- * @param {string|null} params.groupId
- * @param {string} params.checkinTimeStr  - Giờ bắt đầu (raw string)
- * @param {string} params.checkoutTimeStr - Giờ kết thúc (raw string)
- * @returns {Promise<string>}
- */
-async function handleTimeRange({ userId, displayName, groupId, checkinTimeStr, checkoutTimeStr }) {
-  try {
-    const now            = timeUtils.nowVN();
-    const checkinMoment  = timeUtils.buildMomentFromTime(checkinTimeStr, now);
-    const checkoutMoment = timeUtils.buildMomentFromTime(checkoutTimeStr, now);
-
-    if (!checkinMoment || !checkoutMoment) {
-      return '❌ Không thể phân tích giờ làm. Ví dụ đúng: "Làm từ 8h đến 17h"';
-    }
-
-    const checkinFmt  = timeUtils.formatTime(checkinMoment);
-    const checkoutFmt = timeUtils.formatTime(checkoutMoment);
-    const totalHours  = timeUtils.calcWorkHours(checkinMoment, checkoutMoment);
-
-    if (totalHours <= 0) {
-      return `⚠️ Giờ kết thúc (${checkoutFmt}) phải sau giờ bắt đầu (${checkinFmt}).`;
-    }
-
-    const systemTime = timeUtils.formatNow();
-    const dateStr    = timeUtils.formatDate();
-
-    await sheetsService.saveAttendanceRecord({
-      systemTime  : systemTime,
-      date        : dateStr,
-      userId      : userId,
-      displayName : displayName,
-      groupId     : groupId || '',
-      type        : 'Checkin → Checkout',
-      checkinTime : checkinFmt,
-      checkoutTime: checkoutFmt,
-      totalHours  : totalHours.toString(),
-      note        : 'Nhập khoảng giờ tự do',
-    });
-
-    const hoursFormatted = timeUtils.formatHours(totalHours);
-    return (
-      `✅ Đã ghi nhận ca làm việc!\n` +
-      `👤 Nhân viên  : ${displayName}\n` +
-      `🕐 Giờ vào    : ${checkinFmt}\n` +
-      `🕔 Giờ ra     : ${checkoutFmt}\n` +
-      `⏱️  Tổng giờ   : ${hoursFormatted} (${totalHours} giờ)\n` +
-      `📅 Ngày       : ${dateStr}`
-    );
-  } catch (err) {
-    console.error('[AttendanceSvc] Lỗi xử lý khoảng giờ:', err.message);
-    return '❌ Có lỗi xảy ra. Vui lòng thử lại sau.';
-  }
-}
-
-/**
- * Xử lý lệnh /baocao - Báo cáo tổng giờ làm trong tháng.
- * @param {Object} params
- * @param {string} params.userId
- * @param {string} params.displayName
- * @returns {Promise<string>}
- */
 async function handleBaoCao({ userId, displayName }) {
   try {
-    const { totalHours, days, records } = await storageService.getMonthlyReport(userId);
+    const { totalHours, totalSalary, days, records } = await storageService.getMonthlyReport(userId);
 
-    if (records.length === 0) {
-      return (
-        `📊 Báo cáo ${timeUtils.getCurrentMonthLabel()}\n` +
-        `👤 ${displayName}\n\n` +
-        `Chưa có dữ liệu chấm công trong tháng này.`
-      );
+    if (!records || records.length === 0) {
+      return `📊 Báo cáo ${timeUtils.getCurrentMonthLabel()}\n👤 ${displayName}\n\nChưa có dữ liệu tháng này.`;
     }
 
-    const hoursFormatted = timeUtils.formatHours(totalHours);
-
-    // Lấy 5 bản ghi gần nhất để hiển thị
-    const recent = records.slice(-5).reverse();
-    const recentText = recent
-      .map(r => `  • ${r.date}: ${r.checkin || '?'} → ${r.checkout || '?'} (${r.totalHours}h)`)
-      .join('\n');
-
     return (
-      `📊 Báo cáo ${timeUtils.getCurrentMonthLabel()}\n` +
+      `📊 BÁO CÁO LƯƠNG ${timeUtils.getCurrentMonthLabel()}\n` +
       `━━━━━━━━━━━━━━━━━━━━\n` +
-      `👤 Nhân viên  : ${displayName}\n` +
-      `📅 Số ngày làm : ${days} ngày\n` +
-      `⏱️  Tổng giờ   : ${hoursFormatted}\n` +
-      `━━━━━━━━━━━━━━━━━━━━\n` +
-      `📋 5 ca gần nhất:\n${recentText}`
+      `👤 Nhân viên   : ${displayName}\n` +
+      `📅 Số ca làm   : ${days} ca\n` +
+      `⏱️  Tổng giờ    : ${totalHours} giờ\n` +
+      `💰 TỔNG LƯƠNG  : ${formatVND(totalSalary || 0)}\n` +
+      `━━━━━━━━━━━━━━━━━━━━`
     );
   } catch (err) {
-    console.error('[AttendanceSvc] Lỗi lấy báo cáo:', err.message);
-    return '❌ Không thể lấy báo cáo lúc này. Vui lòng thử lại sau.';
+    console.error('[AttendanceSvc] Lỗi báo cáo:', err.message);
+    return '❌ Không thể lấy báo cáo lúc này.';
   }
 }
 
-/**
- * Trả về tin nhắn hướng dẫn sử dụng bot.
- * @param {string} displayName
- * @returns {string}
- */
 function handleHelp(displayName) {
   return (
-    `🤖 HƯỚNG DẪN SỬ DỤNG BOT CHẤM CÔNG\n` +
+    `🤖 HƯỚNG DẪN ĐIỂM DANH & TÍNH LƯƠNG\n` +
     `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
     `👋 Xin chào ${displayName}!\n\n` +
-    `📌 CÁC LỆNH CƠ BẢN:\n` +
-    `  • /in hoặc /checkin\n` +
-    `    → Bắt đầu ca làm việc\n\n` +
-    `  • /out hoặc /checkout\n` +
-    `    → Kết thúc ca, tự tính giờ\n\n` +
-    `  • /baocao\n` +
-    `    → Xem tổng giờ làm tháng này\n\n` +
-    `📌 LỆNH TỰ DO:\n` +
-    `  • "Checkin 08:30"\n` +
-    `  • "Checkout 17:00"\n` +
-    `  • "Làm từ 8h đến 17h"\n\n` +
-    `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-    `💡 Dữ liệu được lưu vào Google Sheets tự động!`
+    `📌 NHẮN GIỜ LÀM TRỰC TIẾP (TỰ TÍNH LƯƠNG):\n` +
+    `  • "4 trong 2 ngoài" → Tính 4h ca trong + 2h ca ngoài\n` +
+    `  • "6 tiếng" hoặc "6h" → Tính 6h ca trong\n\n` +
+    `📌 LỆNH HỆ THỐNG:\n` +
+    `  • /in hoặc /checkin → Bắt đầu ca\n` +
+    `  • /out hoặc /checkout → Kết thúc ca\n` +
+    `  • /baocao → Xem tổng lương tháng này`
   );
 }
 
-/**
- * Điểm vào chính: xử lý toàn bộ tin nhắn nhận được.
- * @param {Object} params
- * @param {string} params.userId
- * @param {string} params.displayName
- * @param {string|null} params.groupId
- * @param {string} params.messageText
- * @returns {Promise<string|null>} Tin nhắn phản hồi, hoặc null nếu không xử lý
- */
-async function processMessage({ userId, displayName, groupId, messageText }) {
-  if (!messageText) return null;
-
-  const { command, checkinTime, checkoutTime } = parseCommand(messageText);
-
-  console.log(
-    `[AttendanceSvc] Lệnh: "${command}" | User: ${displayName} (${userId})` +
-    (groupId ? ` | Nhóm: ${groupId}` : '')
-  );
-
-  switch (command) {
-    case 'checkin':
-      return handleCheckin({ userId, displayName, groupId, customTime: checkinTime });
-
-    case 'checkout':
-      return handleCheckout({ userId, displayName, groupId, customTime: checkoutTime });
-
-    case 'timerange':
-      return handleTimeRange({
-        userId,
-        displayName,
-        groupId,
-        checkinTimeStr : checkinTime,
-        checkoutTimeStr: checkoutTime,
-      });
-
-    case 'baocao':
-      return handleBaoCao({ userId, displayName });
-
-    case 'help':
-      return handleHelp(displayName);
-
-    default:
-      return null; // Không phải lệnh bot, bỏ qua
-  }
-}
-
-module.exports = {
-  processMessage,
-  parseCommand,
-  handleCheckin,
-  handleCheckout,
-  handleTimeRange,
-  handleBaoCao,
-  handleHelp,
-};
+async function processMessage({ userId, displayName, groupId, messageText })
