@@ -1,46 +1,35 @@
 {
   "records": [
     {
-      "id": "1785772583440-0lnsld",
-      "systemTime": "03/08/2026 22:56:23",
-      "date": "03/08/2026",
-      "userId": "ZALO_USER",
-      "displayName": "Người dùng Zalo",
-      "type": "Web Edit",
-      "insideHours": 0.18,
-      "outsideHours": 0,
-      "totalHours": 0.18,
-      "insideSalary": 5400,
-      "outsideSalary": 0,
-      "totalSalary": 5400,
-      "note": ""
-    },
-    {
       "id": "1785775036638-1zt3sn",
       "systemTime": "03/08/2026 23:37:16",
       "date": "03/08/2026",
-      "userId": "ZALO_USER",
-      "displayName": "Người dùng Zalo",
-      "groupId": "",
-      "type": "Nhập giờ trực tiếp",
-      "checkinTime": "",
-      "checkoutTime": "",
+      "userId": "WEB_UI",
+      "displayName": "Quản trị viên",
+      "type": "Web Edit",
+      "insideHours": 8,
+      "outsideHours": 0,
       "totalHours": 8,
+      "insideSalary": 240000,
+      "outsideSalary": 0,
+      "totalSalary": 240000,
       "note": "8 trong"
     },
     {
       "id": "1785775046795-pd1oq0",
       "systemTime": "03/08/2026 23:37:26",
       "date": "03/08/2026",
-      "userId": "ZALO_USER",
-      "displayName": "Người dùng Zalo",
-      "groupId": "",
-      "type": "Nhập giờ trực tiếp",
-      "checkinTime": "",
-      "checkoutTime": "",
+      "userId": "WEB_UI",
+      "displayName": "Quản trị viên",
+      "type": "Web Edit",
+      "insideHours": 8,
+      "outsideHours": 0,
       "totalHours": 8,
+      "insideSalary": 240000,
+      "outsideSalary": 0,
+      "totalSalary": 240000,
       "note": "8h trong"
     }
   ],
-  "lastUpdated": "2026-08-03T16:37:26.795Z"
+  "lastUpdated": "2026-08-03T16:38:21.738Z"
 }
