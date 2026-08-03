@@ -2,7 +2,7 @@
  * src/services/attendanceService.js
  * ==================================
  * Service chứa toàn bộ business logic chấm công & tính lương.
- * Hỗ trợ: Nhắn tắt, tự phân tích ngày/tháng/năm tùy chỉnh.
+ * Hỗ trợ: Nhắn tắt (4t 2n, 4t, 2n, 6h), tự phân tích ngày/tháng/năm tùy chỉnh.
  */
 
 'use strict';
@@ -23,61 +23,54 @@ function formatVND(amount) {
  */
 function extractCustomDate(text) {
   const currentYear = new Date().getFullYear();
-  // Match định dạng DD/MM/YYYY hoặc DD/MM hoặc DD-MM
   const dateMatch = text.match(/(?:ngày\s*)?(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{4}|\d{2}))?/i);
 
   if (dateMatch) {
     const day   = dateMatch[1].padStart(2, '0');
     const month = dateMatch[2].padStart(2, '0');
     let year  = dateMatch[3] ? dateMatch[3] : currentYear;
-    if (year.length === 2) year = `20${year}`;
+    if (String(year).length === 2) year = `20${year}`;
 
     return `${day}/${month}/${year}`;
   }
 
-  return null; // Không có ngày đi kèm -> dùng ngày hôm nay
+  return null;
 }
 
 /**
  * Phân tích số giờ làm (trong/ngoài) từ câu nhắn tắt
  */
 function parseDirectHours(text) {
-  // Loại bỏ phần ngày tháng trước khi soi số giờ
   const cleanedText = text.replace(/(?:ngày\s*)?\d{1,2}[\/\-]\d{1,2}(?:[\/\-]\d{2,4})?/gi, '').trim().toLowerCase();
 
   let insideHours = 0;
   let outsideHours = 0;
   let matched = false;
 
-  // Pattern 1: "4t 2n", "4 trong 2 ngoài", "4h t 2h n"
   const combinedMatch = cleanedText.match(/(\d+(?:\.\d+)?)\s*(?:tiếng|h|giờ)?\s*(?:trong|t)\s*(\d+(?:\.\d+)?)\s*(?:tiếng|h|giờ)?\s*(?:ngoài|n)\b/i);
   if (combinedMatch) {
     insideHours = parseFloat(combinedMatch[1]);
     outsideHours = parseFloat(combinedMatch[2]);
     matched = true;
   } else {
-    // Pattern 2: "2n 4t", "2 ngoài 4 trong"
     const reversedMatch = cleanedText.match(/(\d+(?:\.\d+)?)\s*(?:tiếng|h|giờ)?\s*(?:ngoài|n)\s*(\d+(?:\.\d+)?)\s*(?:tiếng|h|giờ)?\s*(?:trong|t)\b/i);
     if (reversedMatch) {
       outsideHours = parseFloat(reversedMatch[1]);
       insideHours = parseFloat(reversedMatch[2]);
       matched = true;
     } else {
-      // Pattern 3: Chỉ nhắn ca trong (VD: "6trong", "6t", "5ht")
       const insideMatch = cleanedText.match(/(\d+(?:\.\d+)?)\s*(?:tiếng|h|giờ)?\s*(?:trong|t)\b/i);
       if (insideMatch) {
         insideHours = parseFloat(insideMatch[1]);
         matched = true;
       }
 
-      // Pattern 4: Chỉ nhắn ca ngoài (VD: "4ngoài", "4n", "3hn")
       const outsideMatch = cleanedText.match(/(\d+(?:\.\d+)?)\s*(?:tiếng|h|giờ)?\s*(?:ngoài|n)\b/i);
       if (outsideMatch) {
         outsideHours = parseFloat(outsideMatch[1]);
         matched = true;
       }
 
-      // Pattern 5: Chỉ nhắn số tiếng thuần túy (VD: "6 tiếng", "6h") -> Mặc định ca trong
       if (!matched) {
         const plainHoursMatch = cleanedText.match(/^(\d+(?:\.\d+)?)\s*(?:tiếng|h|giờ)$/i);
         if (plainHoursMatch) {
@@ -124,9 +117,6 @@ function parseCommand(text) {
   return { command: 'unknown' };
 }
 
-/**
- * Xử lý nhập giờ làm trực tiếp
- */
 async function handleDirectHours({ userId, displayName, groupId, hoursData, customDate, rawText }) {
   try {
     const { insideHours, outsideHours, totalHours } = hoursData;
@@ -136,13 +126,11 @@ async function handleDirectHours({ userId, displayName, groupId, hoursData, cust
     const totalSalary   = insideSalary + outsideSalary;
 
     const nowStr  = timeUtils.formatNow();
-    // Nếu có ngày nhập kèm thì lấy ngày đó, ngược lại lấy ngày HÔM NAY
     const targetDateStr = customDate || timeUtils.formatDate();
 
-    // Ghi trực tiếp vào GitHub Storage
     await storageService.saveAttendanceRecord({
       systemTime   : nowStr,
-      date         : targetDateStr,     // 👈 Ngày được ghi nhận chuẩn xác
+      date         : targetDateStr,
       userId       : userId,
       displayName  : displayName,
       groupId      : groupId || '',
@@ -152,7 +140,7 @@ async function handleDirectHours({ userId, displayName, groupId, hoursData, cust
       totalHours   : totalHours,
       insideSalary : insideSalary,
       outsideSalary: outsideSalary,
-      totalSalary  : totalSalary,      // 👈 Số tiền lương VNĐ
+      totalSalary  : totalSalary,
       note         : rawText,
     });
 
@@ -198,7 +186,8 @@ async function handleCheckin({ userId, displayName, groupId }) {
       `✅ Checkin thành công!\n` +
       `👤 Nhân viên : ${displayName}\n` +
       `🕐 Giờ vào   : ${checkinTimeStr}\n` +
-      `📅 Ngày      : ${dateStr}`;
+      `📅 Ngày      : ${dateStr}`
+    );
   } catch (err) {
     console.error('[AttendanceSvc] Lỗi checkin:', err.message);
     return '❌ Có lỗi xảy ra khi checkin.';
@@ -237,7 +226,8 @@ async function handleCheckout({ userId, displayName, groupId }) {
       `👤 Nhân viên  : ${displayName}\n` +
       `⏱️  Tổng giờ   : ${totalHours} giờ\n` +
       `💵 Tiền lương : ${formatVND(totalSalary)}\n` +
-      `📅 Ngày       : ${timeUtils.formatDate()}`;
+      `📅 Ngày       : ${timeUtils.formatDate()}`
+    );
   } catch (err) {
     console.error('[AttendanceSvc] Lỗi checkout:', err.message);
     return '❌ Có lỗi xảy ra khi checkout.';
