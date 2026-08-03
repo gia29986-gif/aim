@@ -6,13 +6,15 @@
       "date": "03/08/2026",
       "userId": "ZALO_USER",
       "displayName": "Người dùng Zalo",
-      "groupId": "",
-      "type": "Checkin → Checkout",
-      "checkinTime": "22:56:23",
-      "checkoutTime": "23:07:09",
+      "type": "Web Edit",
+      "insideHours": 0.18,
+      "outsideHours": 0,
       "totalHours": 0.18,
+      "insideSalary": 5400,
+      "outsideSalary": 0,
+      "totalSalary": 5400,
       "note": ""
     }
   ],
-  "lastUpdated": "2026-08-03T16:07:09.393Z"
+  "lastUpdated": "2026-08-03T16:28:07.137Z"
 }
