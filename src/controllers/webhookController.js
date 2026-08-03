@@ -84,15 +84,18 @@ function parseZaloPayload(body) {
     'Người dùng Zalo'
   );
 
-  // Message info
+    // Message info
   const message = event.message || {};
 
-  const messageText = (
+  let messageText = (
     message.text        ||
     event.message_text  ||
     event.text          ||
     ''
   ).trim();
+
+  // 👈 Tự động cắt bỏ tag "@Bot ghi lương" hoặc "Bot ghi lương" ở đầu tin nhắn
+  messageText = messageText.replace(/^@?Bot\s*ghi\s*lương\s*/i, '').trim();
 
   // Group ID - chỉ có khi tin nhắn trong nhóm
   const groupId = (
