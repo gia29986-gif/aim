@@ -51,28 +51,37 @@ function parseZaloPayload(body) {
   // Timestamp
   const timestamp = event.timestamp || Date.now();
 
-  // Sender info
+   // Sender info (Bổ sung từ khóa từ Zalo Bot Platform)
   const sender      = event.sender      || {};
   const follower    = event.follower    || {};
   const userJoined  = event.user        || {};
+  const from        = event.from        || {};
 
+  // Tự động tìm userId từ tất cả các trường có thể có của Zalo
   const userId = (
-    sender.id    ||
-    follower.id  ||
-    userJoined.id ||
-    event.user_id ||
-    ''
+    sender.id       ||
+    follower.id     ||
+    userJoined.id   ||
+    from.id         ||
+    event.from_id   ||
+    event.user_id   ||
+    event.userId    ||
+    event.sender_id ||
+    event.senderId  ||
+    (typeof event.from === 'string' || typeof event.from === 'number' ? event.from : '') ||
+    'ZALO_USER'     // 👈 Nếu Zalo ẩn ID thì dùng mã ZALO_USER mặc định thay vì để trống
   ).toString();
 
   const displayName = (
     sender.display_name     ||
     sender.name             ||
+    from.name               ||
     follower.display_name   ||
     follower.name           ||
     userJoined.display_name ||
     userJoined.name         ||
     event.display_name      ||
-    'Người dùng'
+    'Người dùng Zalo'
   );
 
   // Message info
