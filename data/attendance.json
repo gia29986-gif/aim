@@ -7,12 +7,12 @@
       "userId": "ZALO_USER",
       "displayName": "Người dùng Zalo",
       "groupId": "",
-      "type": "Checkin",
+      "type": "Checkin → Checkout",
       "checkinTime": "22:56:23",
-      "checkoutTime": "",
-      "totalHours": 0,
+      "checkoutTime": "23:07:09",
+      "totalHours": 0.18,
       "note": ""
     }
   ],
-  "lastUpdated": "2026-08-03T15:56:23.440Z"
+  "lastUpdated": "2026-08-03T16:07:09.393Z"
 }
