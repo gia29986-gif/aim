@@ -42,7 +42,20 @@
       "checkoutTime": "",
       "totalHours": 5,
       "note": "@Gia Huy -5 tiếng ngoài trời"
+    },
+    {
+      "id": "1785777653154-k23o8p",
+      "systemTime": "04/08/2026 00:20:52",
+      "date": "04/08/2026",
+      "userId": "ZALO_USER",
+      "displayName": "Người dùng Zalo",
+      "groupId": "",
+      "type": "Nhập giờ trực tiếp",
+      "checkinTime": "",
+      "checkoutTime": "",
+      "totalHours": 4,
+      "note": "4n"
     }
   ],
-  "lastUpdated": "2026-08-03T16:40:24.841Z"
+  "lastUpdated": "2026-08-03T17:20:53.155Z"
 }
