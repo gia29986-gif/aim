@@ -247,6 +247,7 @@ async function handleWebhook(req, res) {
     // Route theo loại sự kiện
     switch (parsed.eventName) {
       // ── Tin nhắn text ──────────────────────────────────────────
+      case 'message.text.received':
       case 'user_send_text':
       case 'user_send_message':
       case 'message':
