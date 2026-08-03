@@ -14,7 +14,20 @@
       "outsideSalary": 0,
       "totalSalary": 5400,
       "note": ""
+    },
+    {
+      "id": "1785775036638-1zt3sn",
+      "systemTime": "03/08/2026 23:37:16",
+      "date": "03/08/2026",
+      "userId": "ZALO_USER",
+      "displayName": "Người dùng Zalo",
+      "groupId": "",
+      "type": "Nhập giờ trực tiếp",
+      "checkinTime": "",
+      "checkoutTime": "",
+      "totalHours": 8,
+      "note": "8 trong"
     }
   ],
-  "lastUpdated": "2026-08-03T16:28:07.137Z"
+  "lastUpdated": "2026-08-03T16:37:16.638Z"
 }
