@@ -1,4 +1,20 @@
 {
-  "records": [],
-  "lastUpdated": null
+  "records": [
+    {
+      "id": "log_1785851611024_v3ora",
+      "systemTime": "2026-08-04T13:53:31.023Z",
+      "date": "01/08/2026",
+      "userId": "WEB_UI",
+      "displayName": "Quản trị viên",
+      "type": "Web Edit",
+      "insideHours": 2.5,
+      "outsideHours": 5.5,
+      "totalHours": 8,
+      "insideSalary": 75000,
+      "outsideSalary": 192500,
+      "totalSalary": 267500,
+      "note": ""
+    }
+  ],
+  "lastUpdated": "2026-08-04T13:53:37.630Z"
 }
