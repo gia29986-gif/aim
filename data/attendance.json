@@ -1,9 +1,24 @@
 {
   "records": [
     {
-      "id": "1785775036638-1zt3sn",
-      "systemTime": "03/08/2026 23:37:16",
-      "date": "03/08/2026",
+      "id": "1785777653154-k23o8p",
+      "systemTime": "04/08/2026 00:20:52",
+      "date": "04/08/2026",
+      "userId": "WEB_UI",
+      "displayName": "Quản trị viên",
+      "type": "Web Edit",
+      "insideHours": 4,
+      "outsideHours": 0,
+      "totalHours": 4,
+      "insideSalary": 120000,
+      "outsideSalary": 0,
+      "totalSalary": 120000,
+      "note": "4n"
+    },
+    {
+      "id": "1785805743481-yj575k",
+      "systemTime": "04/08/2026 08:09:03",
+      "date": "04/08/2026",
       "userId": "WEB_UI",
       "displayName": "Quản trị viên",
       "type": "Web Edit",
@@ -13,7 +28,7 @@
       "insideSalary": 240000,
       "outsideSalary": 0,
       "totalSalary": 240000,
-      "note": "8 trong"
+      "note": "7n 1t"
     },
     {
       "id": "1785775046795-pd1oq0",
@@ -34,8 +49,8 @@
       "id": "1785775224841-4sada5",
       "systemTime": "03/08/2026 23:40:24",
       "date": "03/08/2026",
-      "userId": "ZALO_USER",
-      "displayName": "Người dùng Zalo",
+      "userId": "WEB_UI",
+      "displayName": "Quản trị viên",
       "type": "Web Edit",
       "insideHours": 5,
       "outsideHours": 0,
@@ -46,41 +61,11 @@
       "note": "@Gia Huy -5 tiếng ngoài trời"
     },
     {
-      "id": "1785777653154-k23o8p",
-      "systemTime": "04/08/2026 00:20:52",
-      "date": "04/08/2026",
-      "userId": "ZALO_USER",
-      "displayName": "Người dùng Zalo",
-      "type": "Web Edit",
-      "insideHours": 4,
-      "outsideHours": 0,
-      "totalHours": 4,
-      "insideSalary": 120000,
-      "outsideSalary": 0,
-      "totalSalary": 120000,
-      "note": "4n"
-    },
-    {
-      "id": "1785805743481-yj575k",
-      "systemTime": "04/08/2026 08:09:03",
-      "date": "04/08/2026",
-      "userId": "ZALO_USER",
-      "displayName": "Người dùng Zalo",
-      "type": "Web Edit",
-      "insideHours": 8,
-      "outsideHours": 0,
-      "totalHours": 8,
-      "insideSalary": 240000,
-      "outsideSalary": 0,
-      "totalSalary": 240000,
-      "note": "7n 1t"
-    },
-    {
       "id": "1785805996813-4eqo9u",
       "systemTime": "04/08/2026 08:13:16",
       "date": "01/08/2026",
-      "userId": "ZALO_USER",
-      "displayName": "Người dùng Zalo",
+      "userId": "WEB_UI",
+      "displayName": "Quản trị viên",
       "type": "Web Edit",
       "insideHours": 4,
       "outsideHours": 0,
@@ -91,5 +76,5 @@
       "note": "01/08/2026 4 ngoài"
     }
   ],
-  "lastUpdated": "2026-08-04T03:31:42.829Z"
+  "lastUpdated": "2026-08-04T04:11:20.289Z"
 }
