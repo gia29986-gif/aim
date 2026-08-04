@@ -53,8 +53,21 @@
       "checkoutTime": "",
       "totalHours": 8,
       "note": "03/04/2026 7n 1t"
+    },
+    {
+      "id": "1785846421401-5c0fed",
+      "systemTime": "04/08/2026 19:27:00",
+      "date": "02/08/2026",
+      "userId": "ZALO_USER",
+      "displayName": "Người dùng Zalo",
+      "groupId": "",
+      "type": "Nhập giờ trực tiếp",
+      "checkinTime": "",
+      "checkoutTime": "",
+      "totalHours": 4,
+      "note": "02/08/2026 4n"
     }
   ],
   "lastUpdateed": "2026-08-03T16:40:24.841Z",
-  "lastUpdated": "2026-08-04T12:26:32.107Z"
+  "lastUpdated": "2026-08-04T12:27:01.401Z"
 }
