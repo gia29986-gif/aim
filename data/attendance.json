@@ -14,7 +14,21 @@
       "outsideSalary": 0,
       "totalSalary": 240000,
       "note": "8 trong"
+    },
+    {
+      "id": "1785819658937-9a93pt",
+      "systemTime": "04/08/2026 12:00:58",
+      "date": "04/08/2026",
+      "userId": "ZALO_USER",
+      "displayName": "Người dùng Zalo",
+      "groupId": "",
+      "type": "Nhập giờ trực tiếp",
+      "checkinTime": "",
+      "checkoutTime": "",
+      "totalHours": 4,
+      "note": "4 t"
     }
   ],
-  "lastUpdateed": "2026-08-03T16:40:24.841Z"
+  "lastUpdateed": "2026-08-03T16:40:24.841Z",
+  "lastUpdated": "2026-08-04T05:00:58.937Z"
 }
