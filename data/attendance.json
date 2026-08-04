@@ -7,12 +7,12 @@
       "userId": "WEB_UI",
       "displayName": "Quản trị viên",
       "type": "Web Edit",
-      "insideHours": 4.5,
-      "outsideHours": 2.5,
-      "totalHours": 7,
-      "insideSalary": 135000,
-      "outsideSalary": 87500,
-      "totalSalary": 222500,
+      "insideHours": 60,
+      "outsideHours": 0,
+      "totalHours": 60,
+      "insideSalary": 1800000,
+      "outsideSalary": 0,
+      "totalSalary": 1800000,
       "note": "2h30 ngoài 4h30 trong"
     },
     {
@@ -91,6 +91,21 @@
       "note": "02/08/2026 4n"
     },
     {
+      "id": "1785846464229-s7v105",
+      "systemTime": "04/08/2026 19:27:43",
+      "date": "01/08/2026",
+      "userId": "WEB_UI",
+      "displayName": "Quản trị viên",
+      "type": "Web Edit",
+      "insideHours": 60,
+      "outsideHours": 0,
+      "totalHours": 60,
+      "insideSalary": 1800000,
+      "outsideSalary": 0,
+      "totalSalary": 1800000,
+      "note": "01/08/2026 5h30 n 2h30 t"
+    },
+    {
       "id": "1785846392106-ork4z2",
       "systemTime": "04/08/2026 19:26:31",
       "date": "03/04/2026",
@@ -106,5 +121,5 @@
       "note": "03/04/2026 7n 1t"
     }
   ],
-  "lastUpdated": "2026-08-04T13:47:02.276Z"
+  "lastUpdated": "2026-08-04T13:49:43.149Z"
 }
