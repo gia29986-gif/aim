@@ -36,11 +36,13 @@
       "date": "03/08/2026",
       "userId": "ZALO_USER",
       "displayName": "Người dùng Zalo",
-      "groupId": "",
-      "type": "Nhập giờ trực tiếp",
-      "checkinTime": "",
-      "checkoutTime": "",
+      "type": "Web Edit",
+      "insideHours": 5,
+      "outsideHours": 0,
       "totalHours": 5,
+      "insideSalary": 150000,
+      "outsideSalary": 0,
+      "totalSalary": 150000,
       "note": "@Gia Huy -5 tiếng ngoài trời"
     },
     {
@@ -49,11 +51,13 @@
       "date": "04/08/2026",
       "userId": "ZALO_USER",
       "displayName": "Người dùng Zalo",
-      "groupId": "",
-      "type": "Nhập giờ trực tiếp",
-      "checkinTime": "",
-      "checkoutTime": "",
+      "type": "Web Edit",
+      "insideHours": 4,
+      "outsideHours": 0,
       "totalHours": 4,
+      "insideSalary": 120000,
+      "outsideSalary": 0,
+      "totalSalary": 120000,
       "note": "4n"
     },
     {
@@ -62,11 +66,13 @@
       "date": "04/08/2026",
       "userId": "ZALO_USER",
       "displayName": "Người dùng Zalo",
-      "groupId": "",
-      "type": "Nhập giờ trực tiếp",
-      "checkinTime": "",
-      "checkoutTime": "",
+      "type": "Web Edit",
+      "insideHours": 8,
+      "outsideHours": 0,
       "totalHours": 8,
+      "insideSalary": 240000,
+      "outsideSalary": 0,
+      "totalSalary": 240000,
       "note": "7n 1t"
     },
     {
@@ -75,13 +81,15 @@
       "date": "01/08/2026",
       "userId": "ZALO_USER",
       "displayName": "Người dùng Zalo",
-      "groupId": "",
-      "type": "Nhập giờ trực tiếp",
-      "checkinTime": "",
-      "checkoutTime": "",
+      "type": "Web Edit",
+      "insideHours": 4,
+      "outsideHours": 0,
       "totalHours": 4,
+      "insideSalary": 120000,
+      "outsideSalary": 0,
+      "totalSalary": 120000,
       "note": "01/08/2026 4 ngoài"
     }
   ],
-  "lastUpdated": "2026-08-04T01:13:16.813Z"
+  "lastUpdated": "2026-08-04T03:31:42.829Z"
 }
