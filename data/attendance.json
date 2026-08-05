@@ -59,7 +59,20 @@
       "outsideSalary": 192500,
       "totalSalary": 267500,
       "note": ""
+    },
+    {
+      "id": "1785927229825-w1mltx",
+      "systemTime": "05/08/2026 17:53:49",
+      "date": "05/08/2026",
+      "userId": "ZALO_USER",
+      "displayName": "Người dùng Zalo",
+      "groupId": "",
+      "type": "Nhập giờ trực tiếp",
+      "checkinTime": "",
+      "checkoutTime": "",
+      "totalHours": 60,
+      "note": "@Trường 6h30 ngoài 1h30 trong"
     }
   ],
-  "lastUpdated": "2026-08-04T13:55:11.578Z"
+  "lastUpdated": "2026-08-05T10:53:49.827Z"
 }
