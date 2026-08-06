@@ -1,21 +1,6 @@
 {
   "records": [
     {
-      "id": "1786025676820-zsxn3c",
-      "systemTime": "06/08/2026 21:14:36",
-      "date": "07/08/2026",
-      "userId": "zgr-4d744abf97d27e8c27c3",
-      "displayName": "Gia Huy",
-      "type": "Web Edit",
-      "insideHours": 4,
-      "outsideHours": 4,
-      "totalHours": 8,
-      "insideSalary": 120000,
-      "outsideSalary": 140000,
-      "totalSalary": 260000,
-      "note": "07/08 4 n 4 t"
-    },
-    {
       "id": "1786025591636-kz8xhc",
       "systemTime": "06/08/2026 21:13:11",
       "date": "06/08/2026",
@@ -61,6 +46,21 @@
       "note": "04/08 2h30 ngoài 4h30 trong"
     },
     {
+      "id": "1786025717444-jmdstt",
+      "systemTime": "06/08/2026 21:15:16",
+      "date": "03/08/2026",
+      "userId": "zgr-4d744abf97d27e8c27c3",
+      "displayName": "Gia Huy",
+      "type": "Web Edit",
+      "insideHours": 1,
+      "outsideHours": 7,
+      "totalHours": 8,
+      "insideSalary": 30000,
+      "outsideSalary": 245000,
+      "totalSalary": 275000,
+      "note": "03/08 7n 1t"
+    },
+    {
       "id": "1786025079085-64h9kk",
       "systemTime": "06/08/2026 21:04:38",
       "date": "02/08/2026",
@@ -89,25 +89,7 @@
       "outsideSalary": 192500,
       "totalSalary": 267500,
       "note": "01/08 5h30 n 2h30 t"
-    },
-    {
-      "id": "1786025717444-jmdstt",
-      "systemTime": "06/08/2026 21:15:16",
-      "date": "03/08/2026",
-      "userId": "zgr-4d744abf97d27e8c27c3",
-      "displayName": "Gia Huy",
-      "groupId": "",
-      "type": "Nhập giờ trực tiếp",
-      "checkinTime": "",
-      "checkoutTime": "",
-      "insideHours": 1,
-      "outsideHours": 7,
-      "totalHours": 8,
-      "insideSalary": 30000,
-      "outsideSalary": 245000,
-      "totalSalary": 275000,
-      "note": "03/08 7n 1t"
     }
   ],
-  "lastUpdated": "2026-08-06T14:15:17.445Z"
+  "lastUpdated": "2026-08-06T14:15:05.004Z"
 }
