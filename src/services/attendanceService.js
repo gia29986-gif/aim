@@ -50,12 +50,11 @@ function parseDirectHours(text) {
     return Math.round((hours + minutes / 60) * 100) / 100;
   };
 
-  const timeUnit = '(?:tiếng|tieng|giờ|gio|h|g)';
-  const minuteUnit = '(?:phút|phut|p|m)';
-  const timePattern = `(\\d+(?:[\\.,]\\d+)?)\\s*(?:${timeUnit}\\s*(\\d{1,2})\\s*${minuteUnit}?)?`;
-
   const parseByLabel = (labelPattern) => {
-    const regex = new RegExp(`${timePattern}\\s*${labelPattern}(?![a-zA-Z\\u00C0-\\u024F\\u1E00-\\u1EFF])`, 'gi');
+    const timeUnit = '(?:h|giờ|gio|tiếng|tieng|g)?';
+    const minuteUnit = '(?:p|phút|phut|m)?';
+    const regex = new RegExp(`(\\d+(?:[\\.,]\\d+)?)\\s*${timeUnit}\\s*(?:(\\d{1,2})\\s*${minuteUnit})?\\s*${labelPattern}(?![a-zA-Z\\u00C0-\\u024F\\u1E00-\\u1EFF])`, 'gi');
+
     let total = 0;
     let hasMatch = false;
     let match;
@@ -78,10 +77,27 @@ function parseDirectHours(text) {
   let outsideHours = outside.hours;
   let matched = inside.matched || outside.matched;
 
+  // Thử match dạng khoảng thời gian: '8h đến 17h', 'từ 8:00 - 17:30'
   if (!matched) {
-    const plainHoursMatch = cleanedText.match(
-      new RegExp(`^(?:báo\\s*giờ|bao\\s*gio|báo|bao|hôm\\s*nay|hom\\s*nay|làm|lam|ca)?\\s*${timePattern}\\s*${timeUnit}$`, 'i')
-    );
+    const rangeMatch = cleanedText.match(/(?:từ|lam|làm)?\s*(\d{1,2})(?::(\d{2}))?\s*(?:h|g|gio|giờ)?\s*(?:đến|den|-|->)\s*(\d{1,2})(?::(\d{2}))?\s*(?:h|g|gio|giờ)?/i);
+    if (rangeMatch) {
+      const startH = parseInt(rangeMatch[1], 10);
+      const startM = parseInt(rangeMatch[2] || '0', 10);
+      const endH = parseInt(rangeMatch[3], 10);
+      const endM = parseInt(rangeMatch[4] || '0', 10);
+
+      const startTotal = startH + startM / 60;
+      const endTotal = endH + endM / 60;
+      if (endTotal > startTotal) {
+        insideHours = Math.round((endTotal - startTotal) * 100) / 100;
+        matched = true;
+      }
+    }
+  }
+
+  // Thử match số giờ trơn: '6h', '6 tiếng', 'báo 6h', 'hôm nay làm 8 tiếng'
+  if (!matched) {
+    const plainHoursMatch = cleanedText.match(/(\d+(?:[\.,]\d+)?)\s*(?:h|giờ|gio|tiếng|tieng|g)(?:\s*(\d{1,2})\s*(?:p|phút|phut|m)?)?/i);
     if (plainHoursMatch) {
       const parsed = parseHourToken(plainHoursMatch[1], plainHoursMatch[2]);
       if (parsed !== null) {
