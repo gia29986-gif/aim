@@ -73,15 +73,22 @@ function parseZaloPayload(body) {
     ''
   ).toString();
 
+  const senderObj  = event.sender || {};
+
   const displayName = (
     fromObj.display_name     ||
     fromObj.name             ||
     (fromObj.first_name ? `${fromObj.first_name} ${fromObj.last_name || ''}`.trim() : '') ||
+    senderObj.display_name   ||
+    senderObj.name           ||
+    (senderObj.first_name ? `${senderObj.first_name} ${senderObj.last_name || ''}`.trim() : '') ||
     follower.display_name   ||
     follower.name           ||
     userJoined.display_name ||
     userJoined.name         ||
     event.display_name      ||
+    event.user_name         ||
+    event.displayName       ||
     'Người dùng Zalo'
   );
 
