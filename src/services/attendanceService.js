@@ -34,40 +34,57 @@ function extractCustomDate(text) {
 function parseDirectHours(text) {
   const cleanedText = text.replace(/(?:ngày\s*)?\d{1,2}[\/\-]\d{1,2}(?:[\/\-]\d{2,4})?/gi, '').trim().toLowerCase();
 
-  let insideHours = 0;
-  let outsideHours = 0;
-  let matched = false;
+  const parseHourToken = (hoursText, minutesText) => {
+    const hours = Number(String(hoursText).replace(',', '.'));
+    if (!Number.isFinite(hours)) return null;
 
-  const combinedMatch = cleanedText.match(/(\d+(?:\.\d+)?)\s*(?:tiếng|h|giờ)?\s*(?:trong|t)\s*(\d+(?:\.\d+)?)\s*(?:tiếng|h|giờ)?\s*(?:ngoài|n)\b/i);
-  if (combinedMatch) {
-    insideHours = parseFloat(combinedMatch[1]);
-    outsideHours = parseFloat(combinedMatch[2]);
-    matched = true;
-  } else {
-    const reversedMatch = cleanedText.match(/(\d+(?:\.\d+)?)\s*(?:tiếng|h|giờ)?\s*(?:ngoài|n)\s*(\d+(?:\.\d+)?)\s*(?:tiếng|h|giờ)?\s*(?:trong|t)\b/i);
-    if (reversedMatch) {
-      outsideHours = parseFloat(reversedMatch[1]);
-      insideHours = parseFloat(reversedMatch[2]);
-      matched = true;
-    } else {
-      const insideMatch = cleanedText.match(/(\d+(?:\.\d+)?)\s*(?:tiếng|h|giờ)?\s*(?:trong|t)\b/i);
-      if (insideMatch) {
-        insideHours = parseFloat(insideMatch[1]);
-        matched = true;
+    if (!minutesText) {
+      return Math.round(hours * 100) / 100;
+    }
+
+    const minutes = Number(minutesText);
+    if (!Number.isInteger(hours) || !Number.isInteger(minutes) || minutes < 0 || minutes >= 60) {
+      return null;
+    }
+
+    return Math.round((hours + minutes / 60) * 100) / 100;
+  };
+
+  const timeUnit = '(?:tiếng|tieng|giờ|gio|h|g)';
+  const minuteUnit = '(?:phút|phut|p|m)';
+  const timePattern = `(\\d+(?:[\\.,]\\d+)?)\\s*(?:${timeUnit}\\s*(\\d{1,2})\\s*${minuteUnit}?)?`;
+
+  const parseByLabel = (labelPattern) => {
+    const regex = new RegExp(`${timePattern}\\s*${labelPattern}\\b`, 'gi');
+    let total = 0;
+    let hasMatch = false;
+    let match;
+
+    while ((match = regex.exec(cleanedText)) !== null) {
+      const parsed = parseHourToken(match[1], match[2]);
+      if (parsed !== null) {
+        total += parsed;
+        hasMatch = true;
       }
+    }
 
-      const outsideMatch = cleanedText.match(/(\d+(?:\.\d+)?)\s*(?:tiếng|h|giờ)?\s*(?:ngoài|n)\b/i);
-      if (outsideMatch) {
-        outsideHours = parseFloat(outsideMatch[1]);
+    return { hours: Math.round(total * 100) / 100, matched: hasMatch };
+  };
+
+  const inside = parseByLabel('(?:trong\\s*nhà|trong\\s*nha|trong|t)');
+  const outside = parseByLabel('(?:ngoài\\s*trời|ngoai\\s*troi|ngoài|ngoai|n)');
+
+  let insideHours = inside.hours;
+  let outsideHours = outside.hours;
+  let matched = inside.matched || outside.matched;
+
+  if (!matched) {
+    const plainHoursMatch = cleanedText.match(new RegExp(`^${timePattern}\\s*${timeUnit}$`, 'i'));
+    if (plainHoursMatch) {
+      const parsed = parseHourToken(plainHoursMatch[1], plainHoursMatch[2]);
+      if (parsed !== null) {
+        insideHours = parsed;
         matched = true;
-      }
-
-      if (!matched) {
-        const plainHoursMatch = cleanedText.match(/^(\d+(?:\.\d+)?)\s*(?:tiếng|h|giờ)$/i);
-        if (plainHoursMatch) {
-          insideHours = parseFloat(plainHoursMatch[1]);
-          matched = true;
-        }
       }
     }
   }
@@ -77,7 +94,7 @@ function parseDirectHours(text) {
       matched: true,
       insideHours,
       outsideHours,
-      totalHours: insideHours + outsideHours,
+      totalHours: Math.round((insideHours + outsideHours) * 100) / 100,
     };
   }
 

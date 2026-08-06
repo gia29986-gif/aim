@@ -120,6 +120,11 @@ function generateId() {
   return `${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
 }
 
+function normalizeNumber(value, fallback = 0) {
+  const number = Number(value);
+  return Number.isFinite(number) && number >= 0 ? number : fallback;
+}
+
 // ─── PUBLIC API ───────────────────────────────────────────────────────────
 
 /**
@@ -140,7 +145,12 @@ async function saveAttendanceRecord(record) {
     type        : record.type         || '',
     checkinTime : record.checkinTime  || '',
     checkoutTime: record.checkoutTime || '',
-    totalHours  : record.totalHours   || 0,
+    insideHours : normalizeNumber(record.insideHours),
+    outsideHours: normalizeNumber(record.outsideHours),
+    totalHours  : normalizeNumber(record.totalHours),
+    insideSalary: normalizeNumber(record.insideSalary),
+    outsideSalary: normalizeNumber(record.outsideSalary),
+    totalSalary : normalizeNumber(record.totalSalary),
     note        : record.note         || '',
   };
 
