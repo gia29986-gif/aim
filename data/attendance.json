@@ -61,21 +61,6 @@
       "note": "04/08 2h30 ngoài 4h30 trong"
     },
     {
-      "id": "log_1786025004316_m2fye",
-      "systemTime": "2026-08-06T14:03:24.316Z",
-      "date": "04/08/2026",
-      "userId": "ZALO_USER",
-      "displayName": "Nhân viên Zalo",
-      "type": "Web Edit",
-      "insideHours": 0,
-      "outsideHours": 3,
-      "totalHours": 3,
-      "insideSalary": 0,
-      "outsideSalary": 105000,
-      "totalSalary": 105000,
-      "note": "Ví dụ mẫu: 3 ngoài"
-    },
-    {
       "id": "1786025079085-64h9kk",
       "systemTime": "06/08/2026 21:04:38",
       "date": "02/08/2026",
@@ -106,5 +91,5 @@
       "note": "01/08 5h30 n 2h30 t"
     }
   ],
-  "lastUpdated": "2026-08-06T14:13:47.771Z"
+  "lastUpdated": "2026-08-06T14:13:51.853Z"
 }
