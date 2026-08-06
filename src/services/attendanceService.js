@@ -154,7 +154,8 @@ async function handleDirectHours({ userId, displayName, groupId, hoursData, cust
     const nowStr  = timeUtils.formatNow();
     const targetDateStr = customDate || timeUtils.formatDate();
 
-    await storageService.saveAttendanceRecord({
+    // Ghi dữ liệu lên GitHub ở chế độ bất đồng bộ nền (không chặn tin nhắn trả lời Zalo)
+    void storageService.saveAttendanceRecord({
       systemTime   : nowStr,
       date         : targetDateStr,
       userId       : userId,
@@ -168,7 +169,7 @@ async function handleDirectHours({ userId, displayName, groupId, hoursData, cust
       outsideSalary: outsideSalary,
       totalSalary  : totalSalary,
       note         : rawText,
-    });
+    }).catch(err => console.error('[Storage] Lỗi lưu GitHub ngầm:', err.message));
 
     return `💰 Ghi nhận ca làm thành công!\n👤 Nhân viên : ${displayName}\n📅 Ngày      : ${targetDateStr}\n⏱️  Giờ làm   : ${insideHours}h trong | ${outsideHours}h ngoài (Tổng: ${totalHours}h)\n💵 Tiền lương: ${formatVND(totalSalary)}`;
   } catch (err) {
