@@ -1,6 +1,21 @@
 {
   "records": [
     {
+      "id": "log_1786015062053_loetz",
+      "systemTime": "2026-08-06T11:17:42.053Z",
+      "date": "06/08/2026",
+      "userId": "WEB_UI",
+      "displayName": "Quản trị viên",
+      "type": "Web Edit",
+      "insideHours": 0,
+      "outsideHours": 4,
+      "totalHours": 4,
+      "insideSalary": 0,
+      "outsideSalary": 140000,
+      "totalSalary": 140000,
+      "note": ""
+    },
+    {
       "id": "1785927229825-w1mltx",
       "systemTime": "05/08/2026 17:53:49",
       "date": "05/08/2026",
@@ -76,5 +91,5 @@
       "note": ""
     }
   ],
-  "lastUpdated": "2026-08-05T11:01:55.346Z"
+  "lastUpdated": "2026-08-06T11:17:42.886Z"
 }
