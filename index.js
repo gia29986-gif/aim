@@ -89,20 +89,19 @@ app.listen(PORT, () => {
   console.log('╚══════════════════════════════════════════════╝');
 
   // ─── Self-Ping Keep Alive (Chống Sleep Render Free 24/7) ───────────────
-  if (env.APP_URL) {
-    const axios = require('axios');
-    const pingUrl = `${env.APP_URL.replace(/\/$/, '')}/health`;
-    console.log(`[Keep-Alive] 🔄 Tự động ping 10 phút/lần tới: ${pingUrl}`);
+  const axios = require('axios');
+  const appUrl = env.APP_URL || 'https://zalo-attendance-bot-fix.onrender.com';
+  const pingUrl = `${appUrl.replace(/\/$/, '')}/health`;
+  console.log(`[Keep-Alive] 🔄 Tự động ping 4 phút/lần tới: ${pingUrl}`);
 
-    setInterval(async () => {
-      try {
-        const res = await axios.get(pingUrl, { timeout: 10000 });
-        console.log(`[Keep-Alive] 🟢 Ping thành công: status ${res.status}`);
-      } catch (err) {
-        console.warn(`[Keep-Alive] ⚠️ Ping thất bại: ${err.message}`);
-      }
-    }, 10 * 60 * 1000); // 10 phút / lần
-  }
+  setInterval(async () => {
+    try {
+      const res = await axios.get(pingUrl, { timeout: 10000 });
+      console.log(`[Keep-Alive] 🟢 Ping thành công: status ${res.status}`);
+    } catch (err) {
+      console.warn(`[Keep-Alive] ⚠️ Ping thất bại: ${err.message}`);
+    }
+  }, 4 * 60 * 1000); // 4 phút / lần
 });
 
 // ─── Graceful Shutdown ─────────────────────────────────────────────────────
