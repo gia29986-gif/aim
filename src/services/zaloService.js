@@ -28,7 +28,7 @@ function isBotPlatformToken(token) {
  * Endpoint: POST https://bot-api.zaloplatforms.com/bot<TOKEN>/sendMessage
  */
 async function sendBotPlatformMessage(chatId, message) {
-  const token = env.ZALO_BOT_TOKEN;
+  const token = (env.ZALO_BOT_TOKEN || '').trim();
   const url   = `${BOT_PLATFORM_BASE_URL}/bot${token}/sendMessage`;
 
   const payload = {
