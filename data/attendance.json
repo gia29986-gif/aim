@@ -46,21 +46,6 @@
       "note": "4 n"
     },
     {
-      "id": "1785927229825-w1mltx",
-      "systemTime": "05/08/2026 17:53:49",
-      "date": "05/08/2026",
-      "userId": "WEB_UI",
-      "displayName": "Quản trị viên",
-      "type": "Web Edit",
-      "insideHours": 6.5,
-      "outsideHours": 1.5,
-      "totalHours": 8,
-      "insideSalary": 195000,
-      "outsideSalary": 52500,
-      "totalSalary": 247500,
-      "note": "6h30 ngoài 1h30 trong"
-    },
-    {
       "id": "1786024594381-2gb13q",
       "systemTime": "06/08/2026 20:56:33",
       "date": "05/08/2026",
@@ -166,5 +151,5 @@
       "note": "01/08/2026 5h30 n 2h30 t"
     }
   ],
-  "lastUpdated": "2026-08-06T13:57:19.604Z"
+  "lastUpdated": "2026-08-06T13:57:27.380Z"
 }
