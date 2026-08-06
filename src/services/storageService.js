@@ -225,10 +225,19 @@ async function updateCheckoutRecord(userId, checkoutTime, totalHours, note) {
     return false;
   }
 
-  // Cập nhật record
+  // Cập nhật record với đầy đủ các trường giờ và lương
+  const RATE_INSIDE = 30000;
+  const insideHours = totalHours;
+  const insideSalary = insideHours * RATE_INSIDE;
+
   records[targetIndex].type         = 'Checkin → Checkout';
   records[targetIndex].checkoutTime = checkoutTime;
+  records[targetIndex].insideHours  = insideHours;
+  records[targetIndex].outsideHours = 0;
   records[targetIndex].totalHours   = totalHours;
+  records[targetIndex].insideSalary = insideSalary;
+  records[targetIndex].outsideSalary = 0;
+  records[targetIndex].totalSalary  = insideSalary;
   records[targetIndex].note         = note || '';
 
   data.records = records;
@@ -257,6 +266,7 @@ async function getMonthlyReport(userId, yearMonth) {
   const moment = require('moment-timezone');
 
   let totalHours = 0;
+  let totalSalary = 0;
   const workDays = new Set();
   const matched  = [];
 
@@ -269,24 +279,28 @@ async function getMonthlyReport(userId, yearMonth) {
     if (!rowMoment.isBetween(start, end, 'day', '[]')) continue;
 
     if (
-      (r.type === 'Checkin → Checkout' || r.type === 'Checkout') &&
+      (r.type === 'Checkin → Checkout' || r.type === 'Checkout' || r.type === 'Nhập giờ trực tiếp') &&
       r.totalHours > 0
     ) {
+      const rowSalary = Number(r.totalSalary || (r.insideSalary || 0) + (r.outsideSalary || 0) || r.totalHours * 30000);
       totalHours += r.totalHours;
+      totalSalary += rowSalary;
       workDays.add(r.date);
       matched.push({
         date       : r.date,
         checkin    : r.checkinTime,
         checkout   : r.checkoutTime,
         totalHours : r.totalHours,
+        totalSalary: rowSalary,
       });
     }
   }
 
   return {
-    totalHours: Math.round(totalHours * 100) / 100,
-    days      : workDays.size,
-    records   : matched.sort((a, b) => a.date.localeCompare(b.date)),
+    totalHours : Math.round(totalHours * 100) / 100,
+    totalSalary: Math.round(totalSalary),
+    days       : workDays.size,
+    records    : matched.sort((a, b) => a.date.localeCompare(b.date)),
   };
 }
 

@@ -37,45 +37,46 @@ const BOT_IDS_BLACKLIST = [];
  * @returns {{ eventName, userId, displayName, groupId, messageText, timestamp }}
  */
 function parseZaloPayload(body) {
-  // Zalo có thể bọc trong nhiều cấu trúc khác nhau
-  const event = body;
+  const event = body || {};
+
+  // Zalo Bot Platform (Bot Manager) bọc tin nhắn trong event.message
+  const messageObj = event.message || {};
+  const chatObj    = messageObj.chat || event.chat || {};
+  const fromObj    = messageObj.from || event.from || event.sender || {};
+  const follower   = event.follower || {};
+  const userJoined = event.user || {};
 
   // event_name xác định loại sự kiện
   const eventName = (
     event.event_name ||
     event.type       ||
     event.name       ||
-    'unknown'
+    (messageObj.text || event.text ? 'user_send_text' : 'unknown')
   ).toLowerCase();
 
   // Timestamp
-  const timestamp = event.timestamp || Date.now();
+  const timestamp = event.timestamp || (messageObj.date ? messageObj.date * 1000 : Date.now());
 
-   // Sender info (Bổ sung từ khóa từ Zalo Bot Platform)
-  const sender      = event.sender      || {};
-  const follower    = event.follower    || {};
-  const userJoined  = event.user        || {};
-  const from        = event.from        || {};
-
-  // Tự động tìm userId từ tất cả các trường có thể có của Zalo
+  // Tìm Chat ID / User ID (Zalo Bot Manager dùng chat.id hoặc from.id)
   const userId = (
-    sender.id       ||
-    follower.id     ||
-    userJoined.id   ||
-    from.id         ||
-    event.from_id   ||
-    event.user_id   ||
-    event.userId    ||
-    event.sender_id ||
-    event.senderId  ||
-    (typeof event.from === 'string' || typeof event.from === 'number' ? event.from : '') ||
-    'ZALO_USER'     // 👈 Nếu Zalo ẩn ID thì dùng mã ZALO_USER mặc định thay vì để trống
+    chatObj.id          ||
+    fromObj.id          ||
+    event.user_id_by_app||
+    follower.id         ||
+    userJoined.id       ||
+    event.user_id       ||
+    event.userId        ||
+    event.from_id       ||
+    event.sender_id     ||
+    event.senderId      ||
+    (event.recipient && event.recipient.id) ||
+    ''
   ).toString();
 
   const displayName = (
-    sender.display_name     ||
-    sender.name             ||
-    from.name               ||
+    fromObj.display_name     ||
+    fromObj.name             ||
+    (fromObj.first_name ? `${fromObj.first_name} ${fromObj.last_name || ''}`.trim() : '') ||
     follower.display_name   ||
     follower.name           ||
     userJoined.display_name ||
@@ -84,26 +85,26 @@ function parseZaloPayload(body) {
     'Người dùng Zalo'
   );
 
-    // Message info
-  const message = event.message || {};
-
   let messageText = (
-    message.text        ||
+    messageObj.text     ||
     event.message_text  ||
     event.text          ||
     ''
   ).trim();
 
-  // 👈 Tự động cắt bỏ tag "@Bot ghi lương" hoặc "Bot ghi lương" ở đầu tin nhắn
-  messageText = messageText.replace(/^@?Bot\s*ghi\s*lương\s*/i, '').trim();
+  // Tự động loại bỏ tất cả các tag @người_dùng
+  messageText = messageText
+    .replace(/^@?Bot\s*ghi\s*lương\s*/i, '')
+    .replace(/@[^@\d\/]+(?=\s*\d|\s*\/|\s*$)/gi, '')
+    .replace(/@\S+/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 
-  // Group ID - chỉ có khi tin nhắn trong nhóm
-  const groupId = (
-    message.group_id   ||
-    event.group_id     ||
-    event.recipient?.group_id ||
-    null
-  );
+  // Group ID - Nếu chat là group hoặc supergroup
+  const isGroupChat = chatObj.type === 'group' || chatObj.type === 'supergroup';
+  const groupId = isGroupChat
+    ? chatObj.id
+    : (messageObj.group_id || event.group_id || event.recipient?.group_id || null);
 
   return {
     eventName,
@@ -237,10 +238,8 @@ async function handleWebhook(req, res) {
   try {
     const body = req.body;
 
-    // Log raw payload khi debug
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[Webhook] Raw payload:', JSON.stringify(body, null, 2));
-    }
+    // Log raw payload để debug cấu hình Zalo
+    console.log('[Webhook] Raw payload:', JSON.stringify(body, null, 2));
 
     if (!body) {
       console.warn('[Webhook] ⚠️ Payload rỗng, bỏ qua.');

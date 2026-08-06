@@ -1,9 +1,10 @@
 /**
  * src/services/zaloService.js
  * ===========================
- * Service giao tiếp với Zalo OA API v2.0.
- * Cung cấp các hàm gửi tin nhắn text, reply tin nhắn
- * cho cả chat cá nhân và nhóm.
+ * Service giao tiếp với Zalo API.
+ * Hỗ trợ cả 2 nền tảng:
+ *   1. Zalo Bot Platform (Zalo Bot Manager / Bot Creator) -> bot-api.zaloplatforms.com
+ *   2. Zalo Official Account (Zalo OA API v2.0) -> openapi.zalo.me
  */
 
 'use strict';
@@ -11,47 +12,82 @@
 const axios = require('axios');
 const env   = require('../config/env');
 
-const BASE_URL = env.ZALO_API_URL; // https://openapi.zalo.me/v2.0/oa
+const BOT_PLATFORM_BASE_URL = 'https://bot-api.zaloplatforms.com';
+const OA_BASE_URL           = env.ZALO_API_URL || 'https://openapi.zalo.me/v2.0/oa';
 
 /**
- * Header xác thực chuẩn cho mọi request đến Zalo API.
+ * Kiểm tra xem Token có phải dạng Zalo Bot Manager (Bot Platform) hay không.
+ * Token Bot Manager có dạng: <bot_id>:<secret_key> (ví dụ: 9833768127...:WyqAmgIcu...)
  */
-function getHeaders() {
-  return {
-    'access_token': env.ZALO_BOT_TOKEN,
-    'Content-Type' : 'application/json',
-  };
+function isBotPlatformToken(token) {
+  return typeof token === 'string' && token.includes(':');
 }
 
 /**
- * Gửi tin nhắn text đến người dùng cá nhân (chat 1-1).
- * @param {string} userId  - Zalo User ID của người nhận
- * @param {string} message - Nội dung tin nhắn
- * @returns {Promise<object>} Response từ Zalo API
+ * Gửi tin nhắn qua Zalo Bot Platform (Bot Manager)
+ * Endpoint: POST https://bot-api.zaloplatforms.com/bot<TOKEN>/sendMessage
+ */
+async function sendBotPlatformMessage(chatId, message) {
+  const token = env.ZALO_BOT_TOKEN;
+  const url   = `${BOT_PLATFORM_BASE_URL}/bot${token}/sendMessage`;
+
+  const payload = {
+    chat_id: String(chatId),
+    text   : message,
+  };
+
+  const response = await axios.post(url, payload, {
+    headers: { 'Content-Type': 'application/json' },
+  });
+
+  if (response.data && response.data.ok === false) {
+    console.warn(`[ZaloService] ⚠️ Zalo Bot Manager báo lỗi:`, response.data);
+  } else {
+    console.log(`[ZaloService] ✅ Đã gửi tin qua Zalo Bot Manager đến chat: ${chatId}`);
+  }
+
+  return response.data;
+}
+
+/**
+ * Gửi tin nhắn qua Zalo OA API (Official Account)
+ * Endpoint: POST https://openapi.zalo.me/v2.0/oa/message
+ */
+async function sendOAMessage(recipientObj, message) {
+  const payload = {
+    recipient: recipientObj,
+    message  : { text: message },
+  };
+
+  const response = await axios.post(
+    `${OA_BASE_URL}/message`,
+    payload,
+    {
+      headers: {
+        'access_token': env.ZALO_BOT_TOKEN,
+        'Content-Type' : 'application/json',
+      },
+    }
+  );
+
+  if (response.data && response.data.error !== 0) {
+    console.warn(`[ZaloService] Cảnh báo Zalo OA:`, response.data);
+  } else {
+    console.log(`[ZaloService] ✅ Đã gửi tin qua Zalo OA`);
+  }
+
+  return response.data;
+}
+
+/**
+ * Gửi tin nhắn đến User cá nhân
  */
 async function sendMessageToUser(userId, message) {
   try {
-    const payload = {
-      recipient: { user_id: String(userId) },
-      message  : { text: message },
-    };
-
-    const response = await axios.post(
-      `${BASE_URL}/message`,
-      payload,
-      { headers: getHeaders() }
-    );
-
-    if (response.data && response.data.error !== 0) {
-      console.warn(
-        `[ZaloService] Cảnh báo gửi tin đến user ${userId}:`,
-        response.data
-      );
-    } else {
-      console.log(`[ZaloService] ✅ Đã gửi tin đến user: ${userId}`);
+    if (isBotPlatformToken(env.ZALO_BOT_TOKEN)) {
+      return await sendBotPlatformMessage(userId, message);
     }
-
-    return response.data;
+    return await sendOAMessage({ user_id: String(userId) }, message);
   } catch (err) {
     console.error(
       `[ZaloService] ❌ Lỗi gửi tin đến user ${userId}:`,
@@ -62,34 +98,14 @@ async function sendMessageToUser(userId, message) {
 }
 
 /**
- * Gửi tin nhắn text vào nhóm (Group).
- * @param {string} groupId - ID của nhóm Zalo
- * @param {string} message - Nội dung tin nhắn
- * @returns {Promise<object>}
+ * Gửi tin nhắn vào Nhóm (Group)
  */
 async function sendMessageToGroup(groupId, message) {
   try {
-    const payload = {
-      recipient: { group_id: String(groupId) },
-      message  : { text: message },
-    };
-
-    const response = await axios.post(
-      `${BASE_URL}/message`,
-      payload,
-      { headers: getHeaders() }
-    );
-
-    if (response.data && response.data.error !== 0) {
-      console.warn(
-        `[ZaloService] Cảnh báo gửi tin vào nhóm ${groupId}:`,
-        response.data
-      );
-    } else {
-      console.log(`[ZaloService] ✅ Đã gửi tin vào nhóm: ${groupId}`);
+    if (isBotPlatformToken(env.ZALO_BOT_TOKEN)) {
+      return await sendBotPlatformMessage(groupId, message);
     }
-
-    return response.data;
+    return await sendOAMessage({ group_id: String(groupId) }, message);
   } catch (err) {
     console.error(
       `[ZaloService] ❌ Lỗi gửi tin vào nhóm ${groupId}:`,
@@ -100,13 +116,13 @@ async function sendMessageToGroup(groupId, message) {
 }
 
 /**
- * Gửi tin nhắn thông minh: tự động chọn gửi vào nhóm hoặc cá nhân.
- * @param {string} userId   - Zalo User ID
- * @param {string|null} groupId - Group ID (nếu có, ưu tiên gửi vào nhóm)
- * @param {string} message  - Nội dung
- * @returns {Promise<object>}
+ * Gửi phản hồi thông minh (tự động chọn nhóm hoặc cá nhân)
  */
 async function sendReply(userId, groupId, message) {
+  const targetId = groupId || userId;
+  if (isBotPlatformToken(env.ZALO_BOT_TOKEN)) {
+    return sendBotPlatformMessage(targetId, message);
+  }
   if (groupId) {
     return sendMessageToGroup(groupId, message);
   }
@@ -114,14 +130,15 @@ async function sendReply(userId, groupId, message) {
 }
 
 /**
- * Lấy thông tin profile người dùng Zalo.
- * @param {string} userId
- * @returns {Promise<object|null>}
+ * Lấy profile người dùng
  */
 async function getUserProfile(userId) {
+  if (isBotPlatformToken(env.ZALO_BOT_TOKEN)) {
+    return { user_id: userId, name: 'Người dùng Zalo' };
+  }
   try {
-    const response = await axios.get(`${BASE_URL}/profile`, {
-      headers: getHeaders(),
+    const response = await axios.get(`${OA_BASE_URL}/profile`, {
+      headers: { 'access_token': env.ZALO_BOT_TOKEN },
       params : { user_id: userId },
     });
 
@@ -130,22 +147,18 @@ async function getUserProfile(userId) {
     }
     return null;
   } catch (err) {
-    console.error(
-      `[ZaloService] Không lấy được profile user ${userId}:`,
-      err.message
-    );
+    console.error(`[ZaloService] Không lấy được profile user ${userId}:`, err.message);
     return null;
   }
 }
 
 /**
- * Gửi tin nhắn có nút tương tác (Quick Replies) đến user cá nhân.
- * @param {string} userId
- * @param {string} text
- * @param {Array<{title: string, payload: string}>} quickReplies
- * @returns {Promise<object>}
+ * Gửi Quick Replies
  */
 async function sendQuickReplies(userId, text, quickReplies) {
+  if (isBotPlatformToken(env.ZALO_BOT_TOKEN)) {
+    return sendBotPlatformMessage(userId, text);
+  }
   try {
     const payload = {
       recipient: { user_id: String(userId) },
@@ -160,15 +173,13 @@ async function sendQuickReplies(userId, text, quickReplies) {
     };
 
     const response = await axios.post(
-      `${BASE_URL}/message`,
+      `${OA_BASE_URL}/message`,
       payload,
-      { headers: getHeaders() }
+      { headers: { 'access_token': env.ZALO_BOT_TOKEN, 'Content-Type': 'application/json' } }
     );
 
     return response.data;
   } catch (err) {
-    console.error('[ZaloService] Lỗi gửi quick replies:', err.message);
-    // Fallback: gửi text thường nếu quick replies lỗi
     return sendMessageToUser(userId, text);
   }
 }

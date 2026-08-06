@@ -55,7 +55,7 @@ function parseDirectHours(text) {
   const timePattern = `(\\d+(?:[\\.,]\\d+)?)\\s*(?:${timeUnit}\\s*(\\d{1,2})\\s*${minuteUnit}?)?`;
 
   const parseByLabel = (labelPattern) => {
-    const regex = new RegExp(`${timePattern}\\s*${labelPattern}\\b`, 'gi');
+    const regex = new RegExp(`${timePattern}\\s*${labelPattern}(?![a-zA-Z\\u00C0-\\u024F\\u1E00-\\u1EFF])`, 'gi');
     let total = 0;
     let hasMatch = false;
     let match;
@@ -79,7 +79,9 @@ function parseDirectHours(text) {
   let matched = inside.matched || outside.matched;
 
   if (!matched) {
-    const plainHoursMatch = cleanedText.match(new RegExp(`^${timePattern}\\s*${timeUnit}$`, 'i'));
+    const plainHoursMatch = cleanedText.match(
+      new RegExp(`^(?:báo\\s*giờ|bao\\s*gio|báo|bao|hôm\\s*nay|hom\\s*nay|làm|lam|ca)?\\s*${timePattern}\\s*${timeUnit}$`, 'i')
+    );
     if (plainHoursMatch) {
       const parsed = parseHourToken(plainHoursMatch[1], plainHoursMatch[2]);
       if (parsed !== null) {
