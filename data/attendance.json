@@ -89,7 +89,25 @@
       "outsideSalary": 140000,
       "totalSalary": 140000,
       "note": ""
+    },
+    {
+      "id": "1786024539352-odeqbq",
+      "systemTime": "06/08/2026 20:55:39",
+      "date": "01/08/2026",
+      "userId": "zgr-4d744abf97d27e8c27c3",
+      "displayName": "Gia Huy",
+      "groupId": "",
+      "type": "Nhập giờ trực tiếp",
+      "checkinTime": "",
+      "checkoutTime": "",
+      "insideHours": 2.5,
+      "outsideHours": 5.5,
+      "totalHours": 8,
+      "insideSalary": 75000,
+      "outsideSalary": 192500,
+      "totalSalary": 267500,
+      "note": "01/08/2026 5h30 n 2h30 t"
     }
   ],
-  "lastUpdated": "2026-08-06T13:50:09.896Z"
+  "lastUpdated": "2026-08-06T13:55:39.353Z"
 }
