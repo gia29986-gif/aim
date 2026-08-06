@@ -106,8 +106,8 @@ function parseDirectHours(text) {
 const PATTERNS = {
   CHECKIN  : /^\/?(checkin|in)\b/i,
   CHECKOUT : /^\/?(checkout|out)\b/i,
-  BAOCAO   : /^\/(baocao|report|bc)\b/i,
-  HELP     : /^\/(help|huongdan|hd)\b/i,
+  BAOCAO   : /^\/?(baocao|report|bc)\b/i,
+  HELP     : /^\/?(help|huongdan|hd)\b/i,
 };
 
 function parseCommand(text) {
