@@ -16,6 +16,21 @@
       "note": "4 t"
     },
     {
+      "id": "log_1786113097247_wgjur",
+      "systemTime": "2026-08-07T14:31:37.247Z",
+      "date": "06/08/2026",
+      "userId": "zgr-f276e630eb5d02035b4c",
+      "displayName": "Gia Huy",
+      "type": "Web Edit",
+      "insideHours": 0,
+      "outsideHours": 4,
+      "totalHours": 4,
+      "insideSalary": 0,
+      "outsideSalary": 140000,
+      "totalSalary": 140000,
+      "note": ""
+    },
+    {
       "id": "1786025591636-kz8xhc",
       "systemTime": "06/08/2026 21:13:11",
       "date": "06/08/2026",
@@ -181,5 +196,5 @@
       "note": "01/08 5h30 n 2h30 t"
     }
   ],
-  "lastUpdated": "2026-08-07T14:31:28.206Z"
+  "lastUpdated": "2026-08-07T14:31:37.762Z"
 }
