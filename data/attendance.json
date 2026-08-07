@@ -76,21 +76,6 @@
       "note": ""
     },
     {
-      "id": "1786025097230-b1qho5",
-      "systemTime": "06/08/2026 21:04:56",
-      "date": "04/08/2026",
-      "userId": "zgr-4d744abf97d27e8c27c3",
-      "displayName": "Gia Huy",
-      "type": "Web Edit",
-      "insideHours": 4.5,
-      "outsideHours": 2.5,
-      "totalHours": 7,
-      "insideSalary": 135000,
-      "outsideSalary": 87500,
-      "totalSalary": 222500,
-      "note": "04/08 2h30 ngoài 4h30 trong"
-    },
-    {
       "id": "log_1786113066543_b6tur",
       "systemTime": "2026-08-07T14:31:06.543Z",
       "date": "03/08/2026",
@@ -136,5 +121,5 @@
       "note": ""
     }
   ],
-  "lastUpdated": "2026-08-07T14:32:03.173Z"
+  "lastUpdated": "2026-08-07T14:32:06.152Z"
 }
