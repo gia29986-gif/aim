@@ -1,6 +1,51 @@
 {
   "records": [
     {
+      "id": "log_1786761577825_r62hr",
+      "systemTime": "2026-08-15T02:39:37.825Z",
+      "date": "14/08/2026",
+      "userId": "zgr-f276e630eb5d02035b4c",
+      "displayName": "Gia Huy",
+      "type": "Web Edit",
+      "insideHours": 0,
+      "outsideHours": 2,
+      "totalHours": 2,
+      "insideSalary": 0,
+      "outsideSalary": 70000,
+      "totalSalary": 70000,
+      "note": ""
+    },
+    {
+      "id": "1786618214030-jpwn13",
+      "systemTime": "13/08/2026 17:50:13",
+      "date": "13/08/2026",
+      "userId": "zgr-f276e630eb5d02035b4c",
+      "displayName": "Gia Huy",
+      "type": "Web Edit",
+      "insideHours": 4,
+      "outsideHours": 3,
+      "totalHours": 7,
+      "insideSalary": 120000,
+      "outsideSalary": 105000,
+      "totalSalary": 225000,
+      "note": "4h trong 3h ngoài"
+    },
+    {
+      "id": "1786532257156-ah06pc",
+      "systemTime": "12/08/2026 17:57:36",
+      "date": "12/08/2026",
+      "userId": "zgr-f276e630eb5d02035b4c",
+      "displayName": "Gia Huy",
+      "type": "Web Edit",
+      "insideHours": 4,
+      "outsideHours": 0,
+      "totalHours": 4,
+      "insideSalary": 120000,
+      "outsideSalary": 0,
+      "totalSalary": 120000,
+      "note": "4h trong"
+    },
+    {
       "id": "log_1786451712755_by8be",
       "systemTime": "2026-08-11T12:35:12.755Z",
       "date": "11/08/2026",
@@ -164,43 +209,7 @@
       "outsideSalary": 192500,
       "totalSalary": 267500,
       "note": ""
-    },
-    {
-      "id": "1786532257156-ah06pc",
-      "systemTime": "12/08/2026 17:57:36",
-      "date": "12/08/2026",
-      "userId": "zgr-f276e630eb5d02035b4c",
-      "displayName": "Gia Huy",
-      "groupId": "",
-      "type": "Nhập giờ trực tiếp",
-      "checkinTime": "",
-      "checkoutTime": "",
-      "insideHours": 4,
-      "outsideHours": 0,
-      "totalHours": 4,
-      "insideSalary": 120000,
-      "outsideSalary": 0,
-      "totalSalary": 120000,
-      "note": "4h trong"
-    },
-    {
-      "id": "1786618214030-jpwn13",
-      "systemTime": "13/08/2026 17:50:13",
-      "date": "13/08/2026",
-      "userId": "zgr-f276e630eb5d02035b4c",
-      "displayName": "Gia Huy",
-      "groupId": "",
-      "type": "Nhập giờ trực tiếp",
-      "checkinTime": "",
-      "checkoutTime": "",
-      "insideHours": 4,
-      "outsideHours": 3,
-      "totalHours": 7,
-      "insideSalary": 120000,
-      "outsideSalary": 105000,
-      "totalSalary": 225000,
-      "note": "4h trong 3h ngoài"
     }
   ],
-  "lastUpdated": "2026-08-13T10:50:14.031Z"
+  "lastUpdated": "2026-08-15T02:39:38.329Z"
 }
