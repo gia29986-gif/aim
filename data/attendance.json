@@ -1,6 +1,21 @@
 {
   "records": [
     {
+      "id": "log_1787237115933_40nhw",
+      "systemTime": "2026-08-20T14:45:15.933Z",
+      "date": "20/08/2026",
+      "userId": "zgr-f276e630eb5d02035b4c",
+      "displayName": "Gia Huy",
+      "type": "Web Edit",
+      "insideHours": 3.5,
+      "outsideHours": 0,
+      "totalHours": 3.5,
+      "insideSalary": 105000,
+      "outsideSalary": 0,
+      "totalSalary": 105000,
+      "note": ""
+    },
+    {
       "id": "1786877423316-b0935l",
       "systemTime": "16/08/2026 17:50:22",
       "date": "16/08/2026",
@@ -241,5 +256,5 @@
       "note": ""
     }
   ],
-  "lastUpdated": "2026-08-16T13:57:21.833Z"
+  "lastUpdated": "2026-08-20T14:45:16.461Z"
 }
