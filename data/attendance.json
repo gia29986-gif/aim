@@ -1,6 +1,21 @@
 {
   "records": [
     {
+      "id": "log_1787321806818_lunsg",
+      "systemTime": "2026-08-21T14:16:46.818Z",
+      "date": "21/08/2026",
+      "userId": "ZALO_USER",
+      "displayName": "Nhân viên Zalo",
+      "type": "Web Edit",
+      "insideHours": 7.5,
+      "outsideHours": 0,
+      "totalHours": 7.5,
+      "insideSalary": 225000,
+      "outsideSalary": 0,
+      "totalSalary": 225000,
+      "note": ""
+    },
+    {
       "id": "log_1787237115933_40nhw",
       "systemTime": "2026-08-20T14:45:15.933Z",
       "date": "20/08/2026",
@@ -271,5 +286,5 @@
       "note": ""
     }
   ],
-  "lastUpdated": "2026-08-20T14:45:27.561Z"
+  "lastUpdated": "2026-08-21T14:16:47.360Z"
 }
